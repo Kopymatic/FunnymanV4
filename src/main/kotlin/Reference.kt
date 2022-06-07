@@ -20,6 +20,7 @@ class Reference {
         const val defaultColor: Int = 0xFF00FF
         const val red: Int = 0xFF0000
         const val green: Int = 0x00FF00
+        val owners = listOf("326489320980611075")
 
         lateinit var connection: Connection
 

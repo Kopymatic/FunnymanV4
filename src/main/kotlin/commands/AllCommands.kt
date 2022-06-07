@@ -14,6 +14,7 @@ class AllCommands {
             HeadPatCmd(),
             BoopCmd(),
             HelpCmd(),
+            UpdateStatusCmd(),
         )
     }
 }

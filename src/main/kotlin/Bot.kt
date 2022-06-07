@@ -82,13 +82,17 @@ class Bot : ListenerAdapter() {
             if (Reference.experimental) {
                 val guild = Reference.jda.getGuildById(Reference.debugGuild)!!
                 for (command in commands) {
-                    log.info("Registering guild command ${command.slashCommandData.name}...")
-                    if (command.supportsSlash) guild.upsertCommand(command.slashCommandData).queue()
+                    if (command.supportsSlash) {
+                        log.info("Registering guild command ${command.slashCommandData.name}...")
+                        guild.upsertCommand(command.slashCommandData).queue()
+                    }
                 }
             } else {
                 for (command in commands) {
-                    log.info("Registering command ${command.slashCommandData.name}...")
-                    if (command.supportsSlash) Reference.jda.upsertCommand(command.slashCommandData).queue()
+                    if (command.supportsSlash) {
+                        log.info("Registering command ${command.slashCommandData.name}...")
+                        Reference.jda.upsertCommand(command.slashCommandData).queue()
+                    }
                 }
             }
 
