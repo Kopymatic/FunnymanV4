@@ -15,6 +15,10 @@ class AllCommands {
             BoopCmd(),
             HelpCmd(),
             UpdateStatusCmd(),
+            NoContextCmd(),
+            PeopleCmd(),
+            PetCmd(),
+            MemeCmd(),
         )
     }
 }
