@@ -19,6 +19,7 @@ class AllCommands {
             PeopleCmd(),
             PetCmd(),
             MemeCmd(),
+            PollCmd(),
         )
     }
 }
