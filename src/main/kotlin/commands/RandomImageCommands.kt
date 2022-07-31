@@ -17,7 +17,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands.slash
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import utilities.*
 import java.sql.ResultSet
-import kotlin.random.Random
 
 abstract class RandomImageCommands : HybridCommand() {
     abstract val name: String
@@ -155,21 +154,11 @@ abstract class RandomImageCommands : HybridCommand() {
     }
 
     private fun random(guildId: String): MessageEmbed {
-        val dbSize = getBiggestId()
+        val preparedStatement = connection.prepareStatement("SELECT * FROM $dbTableName WHERE guildId = ? ORDER BY RANDOM() LIMIT 1")
+        preparedStatement.setString(1, guildId)
+        val resultSet = preparedStatement.executeQuery()
 
-        var found = false
-        var attempts = 0
-        var resultSet: ResultSet? = null
-        while (!found && attempts < 10) {
-            val randomNumber = Random.nextInt(dbSize)
-            val preparedStatement =
-                connection.prepareStatement("SELECT * FROM ${this.dbTableName} WHERE GuildID='${guildId}' and ID='${randomNumber}'")
-            resultSet = preparedStatement.executeQuery()
-            if (resultSet.next()) found = true
-            else attempts++
-        }
-
-        if (!found) {
+        if (!resultSet.next()) {
             return Embed(
                 color = Reference.red,
                 description = "Error: Likely you have nothing imported in this server, or a database error has occurred."
