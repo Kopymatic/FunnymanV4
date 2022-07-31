@@ -1,6 +1,8 @@
 package utilities
 
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.emoji.Emoji
+import net.dv8tion.jda.api.entities.emoji.EmojiUnion
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -35,6 +37,10 @@ abstract class HybridCommand {
     }
     open fun removePrefix(messageEvent: MessageReceivedEvent) : String {
         return messageEvent.message.contentRaw.split(" ").drop(1).joinToString(" ")
+    }
+
+    open fun getEmoji(emoji: String) : EmojiUnion {
+        return Emoji.fromFormatted(emoji)
     }
 
     fun Message.getArgs() : List<String> {

@@ -2,6 +2,7 @@ package utilities
 
 import Reference
 import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
@@ -32,4 +33,8 @@ fun SlashCommandInteractionEvent.isInDm() : Boolean {
 
 fun MessageReceivedEvent.isInDm() : Boolean {
     return this.channel.type == ChannelType.PRIVATE
+}
+
+fun Member.getNickOrUsername() : String {
+    return this.nickname ?: this.user.name
 }

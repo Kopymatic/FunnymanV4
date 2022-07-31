@@ -18,7 +18,7 @@ class ChooseCmd : HybridCommand() {
 
     override val slashCommandData: SlashCommandData = slash(name, description)
         .addOption(OptionType.STRING, "choices", "Choices to choose from, separated by commas", true, false)
-    override val textCommandData: TextCommandData = TextCommandData(name, description, usage = "[choice1], [choice2], ...")
+    override val textCommandData: TextCommandData = TextCommandData(name, description, usage = "[choice1], [choice2], ...", aliases = listOf("pick"))
 
     override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
         val choices = event.getOption<String>("choices")?.split(",")

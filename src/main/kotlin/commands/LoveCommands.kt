@@ -6,19 +6,18 @@ import dev.minn.jda.ktx.interactions.components.getOption
 import dev.minn.jda.ktx.interactions.components.primary
 import dev.minn.jda.ktx.messages.Embed
 import kotlinx.coroutines.withTimeoutOrNull
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands.slash
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import utilities.HybridCommand
-import utilities.TextCommandData
-import utilities.isInDm
-import utilities.kReply
+import utilities.*
 import kotlin.random.Random
 
 abstract class LoveCommands : HybridCommand() {
@@ -80,8 +79,9 @@ abstract class LoveCommands : HybridCommand() {
             event.kReply("You can't use this command in DMs!")
             return
         }
-        val user = event.user
-        val receiver = event.getOption<User>("user")!!
+        val user = event.member ?: throw CommandError("No member found!")
+        val receiverUser = event.getOption<User>("user")!!
+        val receiver = event.guild?.getMemberById(receiverUser.id) ?: throw CommandError("Member not found")
 
         val button = primary("${Random.nextInt()}|${this.name}|${user.id}|${receiver.id}", "Return the $name")
 
@@ -89,7 +89,7 @@ abstract class LoveCommands : HybridCommand() {
             .addActionRow(button)
             .queue {
                 if (Random.nextInt(100) < reactionPercent) {
-                    it.addReaction(possibleReactions.random()).queue()
+                    it.addReaction(Emoji.fromFormatted(possibleReactions.random())).queue()
                 }
             }
 
@@ -100,7 +100,7 @@ abstract class LoveCommands : HybridCommand() {
 
             pressed.kReply(Reference.zeroWidthSpace).addEmbeds(buildEmbed(receiver, user)).queue {
                 if (Random.nextInt(100) < reactionPercent) {
-                    it.addReaction(possibleReactions.random()).queue()
+                    it.addReaction(getEmoji(possibleReactions.random())).queue()
                 }
             }
             event.hook.editOriginalComponents(ActionRow.of(button.asDisabled())).queue()
@@ -112,12 +112,12 @@ abstract class LoveCommands : HybridCommand() {
             event.kReply("You can't use this command in DMs!")
             return
         }
-        if (event.message.mentionedUsers.isEmpty()) {
+        if (event.message.mentions.members.isEmpty()) {
             event.kReply("You must mention a user!")
             return
         }
-        val user = event.author
-        val receiver = event.message.mentionedUsers[0]
+        val user = event.member ?: throw CommandError("No member found!")
+        val receiver = event.message.mentions.members[0]
 
         val button = primary("${Random.nextInt()}|${this.name}|${user.id}|${receiver.id}", "Return the $name")
         var message: Message? = null
@@ -127,7 +127,7 @@ abstract class LoveCommands : HybridCommand() {
             .setActionRow(button)
             .queue {
                 if (Random.nextInt(100) < reactionPercent) {
-                    it.addReaction(possibleReactions.random()).queue()
+                    it.addReaction(getEmoji(possibleReactions.random())).queue()
                 }
                 message = it
             }
@@ -139,14 +139,14 @@ abstract class LoveCommands : HybridCommand() {
 
             pressed.kReply(Reference.zeroWidthSpace).addEmbeds(buildEmbed(receiver, user)).queue {
                 if (Random.nextInt(100) < reactionPercent) {
-                    it.addReaction(possibleReactions.random()).queue()
+                    it.addReaction(getEmoji(possibleReactions.random())).queue()
                 }
             }
             message!!.editMessageComponents(ActionRow.of(button.asDisabled())).queue()
         } ?: message!!.editMessageComponents(ActionRow.of(button.asDisabled())).queue()
     }
 
-    private fun buildEmbed(user: User, receiver: User): MessageEmbed {
+    private fun buildEmbed(user: Member, receiver: Member): MessageEmbed {
         var preparedStatement = Reference.connection.prepareStatement(
             """
                 SELECT * FROM LoveCommands WHERE SenderID = ? AND ReceiverID = ? AND ActionIdentifier = ?; 
@@ -191,7 +191,7 @@ abstract class LoveCommands : HybridCommand() {
 
         return Embed {
             color = Reference.defaultColor
-            title = "${user.name} $embedTitleText ${receiver.name}"
+            title = "${user.getNickOrUsername()} $embedTitleText ${receiver.getNickOrUsername()}"
             image = gif
             footer {
                 name = "That's ${"%,d".format(timesPerformed)} $embedFooterText now!"

@@ -13,11 +13,14 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import utilities.TextCommandData
 
 class PingCmd : HybridCommand() {
+    private val name = "ping"
+    private val description = "Ping pong!"
+
     override val supportsSlash: Boolean = true
     override val supportsText: Boolean = true
 
-    override val slashCommandData: SlashCommandData = slash("ping", "Ping pong!")
-    override val textCommandData: TextCommandData = TextCommandData("ping", "Ping pong!")
+    override val slashCommandData: SlashCommandData = slash(name, description)
+    override val textCommandData: TextCommandData = TextCommandData(name, description)
 
     private val pingButton =
         Reference.jda.button(label = "Pong!", style = ButtonStyle.SUCCESS) { button ->
@@ -31,5 +34,4 @@ class PingCmd : HybridCommand() {
     override suspend fun textCommandReceived(event: MessageReceivedEvent) {
         event.message.reply_("Pong!").setActionRows(ActionRow.of(pingButton)).queue()
     }
-
 }
