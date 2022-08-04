@@ -10,7 +10,7 @@ import kotlin.system.exitProcess
 class Reference {
     companion object {
         const val experimental = false
-        const val version = "4.0.0 PTB 4"
+        const val version = "4.0.0 PTB 5"
         val log = LoggerFactory.getLogger("Main") as Logger
         val prefixes = if (experimental) listOf("dd", "d!.") else listOf("pp", "p!")
         lateinit var jda: JDA
