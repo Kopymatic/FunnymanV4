@@ -2,11 +2,15 @@ import commands.AllCommands
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.light
+import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.requests.GatewayIntent
+import utilities.EverythingListener
+import utilities.kReply
 import kotlin.system.exitProcess
 
 val log = Reference.log
@@ -24,14 +28,23 @@ fun main(args: Array<String>) {
     }
     Reference.connection = Reference.connect(args[1], args[2], args[3])
 
-    log.info("""
+    log.info(
+        """
                 --Configuration--
                     Experimental: ${Reference.experimental}
                     Version: ${Reference.version}
-                    ${if(Reference.experimental) Reference.debugGuild else ""}
-            """.trimIndent())
+                    ${if (Reference.experimental) Reference.debugGuild else ""}
+            """.trimIndent()
+    )
     log.info("Creating JDA instance...")
-    Reference.jda = light(args[0], enableCoroutines = true, builder = {this.enableIntents(GatewayIntent.MESSAGE_CONTENT)}).awaitReady()
+    Reference.jda = light(
+        args[0],
+        enableCoroutines = true,
+        builder = { this.enableIntents(GatewayIntent.MESSAGE_CONTENT) }).awaitReady()
+    Reference.jda.addEventListener(EverythingListener())
+
+    log.info("Getting debug channel")
+    Reference.debugChannel = Reference.jda.getChannelById(TextChannel::class.java, Reference.debugChannelId)!!
 
     log.debug("Getting commands...")
     val commands = AllCommands.commands
@@ -51,8 +64,16 @@ fun main(args: Array<String>) {
         if (name == null) return@listener
 
         for (command in commands) {
-            if (command.supportsText && (command.textCommandData.name.lowercase() == name.lowercase()) || (command.textCommandData.aliases != null && command.textCommandData.aliases!!.contains(name.lowercase()))) {
-                command.textCommandReceived(it)
+            if (command.supportsText && (command.textCommandData.name.lowercase() == name.lowercase()) || (command.textCommandData.aliases != null && command.textCommandData.aliases!!.contains(
+                    name.lowercase()
+                ))
+            ) {
+                try {
+                    command.textCommandReceived(it)
+                } catch (e: Exception) {
+                    it.kReply("An internal exception occurred: \"${e.message}\"").queue()
+                    logError(e)
+                }
                 break
             }
         }
@@ -63,7 +84,12 @@ fun main(args: Array<String>) {
         it.deferReply().await()
         for (command in commands) {
             if (command.supportsSlash && command.slashCommandData.name == it.name) {
-                command.slashCommandReceived(it)
+                try {
+                    command.slashCommandReceived(it)
+                } catch (e: Exception) {
+                    it.kReply("An internal exception occurred: \"${e.message}\"").setEphemeral(true).queue()
+                    logError(e)
+                }
                 break
             }
         }
@@ -97,5 +123,13 @@ fun main(args: Array<String>) {
         }
     }
 
-    Reference.jda.presence.activity = Activity.watching("Version ${Reference.version} ${if (Reference.experimental) "Experimental" else ""}")
+    Reference.jda.presence.activity =
+        Activity.watching("Version ${Reference.version} ${if (Reference.experimental) "Experimental" else ""}")
+}
+
+fun logError(error: Exception) {
+    Reference.log.error(error.message)
+    Reference.debugChannel.sendMessageEmbeds(Embed {
+        title = "Error: \"${error.message}\""
+    }).queue()
 }
