@@ -1,6 +1,6 @@
 package utilities
 
-import Reference
+import R
 import dev.minn.jda.ktx.interactions.components.button
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
@@ -61,7 +61,7 @@ class ButtonPaginator(
     }
 
     private fun updateMessage() {
-        this.message.editMessage(Reference.zeroWidthSpace).setEmbeds(options.pages[currentPage])
+        this.message.editMessage(R.zeroWidthSpace).setEmbeds(options.pages[currentPage])
             .setActionRow(skipBackButton, backButton, forwardButton, skipForwardButton).queue()
     }
 }

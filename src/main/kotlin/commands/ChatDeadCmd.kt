@@ -1,5 +1,6 @@
 package commands
 
+import R
 import dev.minn.jda.ktx.interactions.components.getOption
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -43,7 +44,7 @@ class ChatDeadCmd : HybridCommand() {
         //Variable to translate types to a string usable in the json
         val jsonType = if (type == "general question") "GeneralQuestions" else "WouldYouRather"
 
-        val json = Reference.lists.getJSONObject("ChatDead")
+        val json = R.lists.getJSONObject("ChatDead")
         return json.getJSONArray(jsonType).toList().random().toString()
     }
 

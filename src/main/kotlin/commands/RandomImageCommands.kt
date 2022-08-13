@@ -1,6 +1,6 @@
 package commands
 
-import Reference
+import R
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.interactions.commands.Subcommand
 import dev.minn.jda.ktx.interactions.components.getOption
@@ -25,7 +25,7 @@ abstract class RandomImageCommands : HybridCommand() {
     override val supportsSlash = true
     override val supportsText = true
 
-    private val connection = Reference.connection
+    private val connection = R.connection
 
     /**
      * The name of the database table to store this command's info inside - this MUST BE SET
@@ -51,7 +51,7 @@ abstract class RandomImageCommands : HybridCommand() {
             "find" -> {
                 event.kReply("Loading...").queue {
                     ButtonPaginator(
-                        Reference.jda,
+                        R.jda,
                         it,
                         ButtonPaginatorOptions(
                             find(
@@ -65,7 +65,7 @@ abstract class RandomImageCommands : HybridCommand() {
                 }
             }
             "import" -> {
-                event.channel.sendMessage(Reference.zeroWidthSpace).setEmbeds(importSlash(event)).queue()
+                event.channel.sendMessage(R.zeroWidthSpace).setEmbeds(importSlash(event)).queue()
             }
             "edit" -> {
                 event.kReply().addEmbeds(
@@ -128,7 +128,7 @@ abstract class RandomImageCommands : HybridCommand() {
                     val int = text.trim().toInt()
                     event.kReply("Loading...").queue {
                         ButtonPaginator(
-                            Reference.jda,
+                            R.jda,
                             it,
                             ButtonPaginatorOptions(
                                 find(int, null, event.guild.id),
@@ -139,7 +139,7 @@ abstract class RandomImageCommands : HybridCommand() {
                 } catch (e: NumberFormatException) {
                     event.kReply("Loading...").queue {
                         ButtonPaginator(
-                            Reference.jda,
+                            R.jda,
                             it,
                             ButtonPaginatorOptions(
                                 find(null, text, event.guild.id),
@@ -160,14 +160,14 @@ abstract class RandomImageCommands : HybridCommand() {
 
         if (!resultSet.next()) {
             return Embed(
-                color = Reference.red,
+                color = R.red,
                 description = "Error: Likely you have nothing imported in this server, or a database error has occurred."
             )
         }
 
         return makeEmbed(resultSet!!)
             ?: Embed(
-                color = Reference.red,
+                color = R.red,
                 description = "Error: Unable to make embed."
             )
     }
@@ -184,7 +184,7 @@ abstract class RandomImageCommands : HybridCommand() {
                     Embed(
                         description = "This entry is unavailable! Its likely it was deleted or is out of the database range",
                         footerText = "The highest ID is $dbSize, but some may be unavailable due to deleting or being in different guilds",
-                        color = Reference.red
+                        color = R.red
                     )
                 )
             }
@@ -220,7 +220,7 @@ abstract class RandomImageCommands : HybridCommand() {
                     Embed(
                         description = "No entries found with that tag!",
                         footerText = "The highest ID is ${getBiggestId()}, but some may be unavailable due to deleting or being in different guilds",
-                        color = Reference.red
+                        color = R.red
                     )
                 )
             }
@@ -228,7 +228,7 @@ abstract class RandomImageCommands : HybridCommand() {
             return listOf(
                 Embed(
                     description = "Error: You must provide something to search for!",
-                    color = Reference.red
+                    color = R.red
                 )
             )
         }
@@ -238,7 +238,7 @@ abstract class RandomImageCommands : HybridCommand() {
         val attachment = event.getOption<Attachment>("image")!!
         if(!attachment.isImage) {
             return Embed(
-                color = Reference.red,
+                color = R.red,
                 description = "Error: This is not an image!"
             )
         }
@@ -279,7 +279,7 @@ abstract class RandomImageCommands : HybridCommand() {
             val rs = getLatestEntry()
 
             return Embed(
-                color = Reference.green,
+                color = R.green,
                 title = "Successfully imported image with id ${rs.getInt("id")}",
                 description = "Description: ${rs.getString("textTag")}",
                 image = rs.getString("imageLink")
@@ -287,7 +287,7 @@ abstract class RandomImageCommands : HybridCommand() {
         } catch (e: Exception) {
             e.printStackTrace()
             return Embed(
-                color = Reference.red,
+                color = R.red,
                 description = "Error: Unable to import image."
             )
         }
@@ -299,14 +299,14 @@ abstract class RandomImageCommands : HybridCommand() {
         if (rs.next()) {
             if (rs.getString("GuildID") != guildId) {
                 return Embed(
-                    color = Reference.red,
+                    color = R.red,
                     description = "Error: This ID isn't available in this guild!"
                 )
             }
 
             if (!member.permissions.contains(Permission.ADMINISTRATOR) && member.id != rs.getString("ImporterID")) {
                 return Embed(
-                    color = Reference.red,
+                    color = R.red,
                     description = "Error: You must either be a server administrator or the original importer to remove this!"
                 )
             }
@@ -327,18 +327,18 @@ abstract class RandomImageCommands : HybridCommand() {
 
             return if (ps.executeUpdate() == 1) {
                 Embed(
-                    color = Reference.green,
+                    color = R.green,
                     description = "Successfully edited tags of $toEdit to $tags"
                 )
             } else {
                 Embed(
-                    color = Reference.red,
+                    color = R.red,
                     description = "Database/sql error: Unable to edit tags. Contact the developer."
                 )
             }
         } else {
             return Embed(
-                color = Reference.red,
+                color = R.red,
                 description = "Error: Invalid number! Either not a valid ID or out of database range!"
             )
         }
@@ -350,14 +350,14 @@ abstract class RandomImageCommands : HybridCommand() {
         if (rs.next()) {
             if (rs.getString("GuildID") != guildId) {
                 return Embed(
-                    color = Reference.red,
+                    color = R.red,
                     description = "Error: You cannot delete an entry that is not in this guild!"
                 )
             }
 
             if (!member.permissions.contains(Permission.ADMINISTRATOR) && member.id != rs.getString("ImporterID")) {
                 return Embed(
-                    color = Reference.red,
+                    color = R.red,
                     description = "Error: You cannot delete an entry that isn't yours unless you're an administrator!"
                 )
             }
@@ -365,18 +365,18 @@ abstract class RandomImageCommands : HybridCommand() {
             ps = connection.prepareStatement("DELETE FROM ${this.dbTableName} WHERE id=$toDelete;")
             return if (ps.executeUpdate() == 1) {
                 Embed(
-                    color = Reference.green,
+                    color = R.green,
                     description = "Success!"
                 )
             } else {
                 Embed(
-                    color = Reference.red,
+                    color = R.red,
                     description = "Error: unknown error!"
                 )
             }
         } else {
             return Embed(
-                color = Reference.red,
+                color = R.red,
                 description = "Invalid number! Either not a valid ID or out of database range!"
             )
         }
@@ -417,7 +417,7 @@ abstract class RandomImageCommands : HybridCommand() {
             description = descText,
             image = image,
             footerText = this.footers.random(),
-            color = Reference.defaultColor
+            color = R.defaultColor
         ))
     }
 
@@ -448,7 +448,7 @@ abstract class RandomImageCommands : HybridCommand() {
             .addField(
                 "Getting a specific ${this.name} entry:",
                 "Run the command with a search or an entry id to get a specific entry" +
-                        "\n**Examples:** `${Reference.prefixes[0]}${this.name} (search term)` or `${Reference.prefixes[0]}${this.name} (entry id)`",
+                        "\n**Examples:** `${R.prefixes[0]}${this.name} (search term)` or `${R.prefixes[0]}${this.name} (entry id)`",
                 false
             )
             .addField(
@@ -461,13 +461,13 @@ abstract class RandomImageCommands : HybridCommand() {
                 "Editing:",
                 "If you ever wish to edit the text or link of something you previously imported, " +
                         "send the command the same as you would with importing, but with edit and an id at the beginning and no attachment" +
-                        "\n**Example:** `${Reference.prefixes[0]}${this.name} edit (entry ID) (new text here) (new link here)`" +
+                        "\n**Example:** `${R.prefixes[0]}${this.name} edit (entry ID) (new text here) (new link here)`" +
                         "\n**Note:** Editing an import that has a link with no link will delete that link.", false
             )
             .addField(
                 "Deleting:",
                 "If you wish to delete something you imported, just run the command with delete and an id" +
-                        "\n**Example**: `${Reference.prefixes[0]}${this.name} delete (entry ID)`",
+                        "\n**Example**: `${R.prefixes[0]}${this.name} delete (entry ID)`",
                 false
             )
     }
@@ -504,7 +504,7 @@ class NoContextCmd : RandomImageCommands() {
             name,
             description,
             aliases = listOf("nc"),
-            usage = "Do \"${Reference.prefixes[0]}$name help\" for help"
+            usage = "Do \"${R.prefixes[0]}$name help\" for help"
         )
 }
 
@@ -522,7 +522,7 @@ class PeopleCmd : RandomImageCommands() {
             name,
             description,
             aliases = listOf("me"),
-            usage = "Do \"${Reference.prefixes[0]}$name help\" for help"
+            usage = "Do \"${R.prefixes[0]}$name help\" for help"
         )
 }
 
@@ -542,7 +542,7 @@ class PetCmd : RandomImageCommands() {
         TextCommandData(
             name,
             description,
-            usage = "Do \"${Reference.prefixes[0]}$name help\" for help"
+            usage = "Do \"${R.prefixes[0]}$name help\" for help"
         )
 }
 
@@ -557,6 +557,6 @@ class MemeCmd : RandomImageCommands() {
         TextCommandData(
             name,
             description,
-            usage = "Do \"${Reference.prefixes[0]}$name help\" for help"
+            usage = "Do \"${R.prefixes[0]}$name help\" for help"
         )
 }

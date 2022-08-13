@@ -1,6 +1,6 @@
 package commands
 
-import Reference
+import R
 import dev.minn.jda.ktx.interactions.components.getOption
 import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -51,15 +51,15 @@ class HelpCmd : HybridCommand() {
         val commands = AllCommands.commands.filter { it.supportsText }
         val fields = commands.map {
             Field(
-                "${Reference.prefixes[0]}${it.textCommandData.name} ${if (it.textCommandData.usage == null) "" else it.textCommandData.usage}",
+                "${R.prefixes[0]}${it.textCommandData.name} ${if (it.textCommandData.usage == null) "" else it.textCommandData.usage}",
                 it.textCommandData.description,
                 false
             )
         }
         return Embed(
-            color = Reference.defaultColor,
+            color = R.defaultColor,
             title = "Text Commands",
-            description = "Use `${Reference.prefixes[0]}help [command]` to get help with a command",
+            description = "Use `${R.prefixes[0]}help [command]` to get help with a command",
             fields = fields
 
         )
@@ -69,16 +69,16 @@ class HelpCmd : HybridCommand() {
         val commands = AllCommands.commands.filter { it.supportsText && it.textCommandData.name.startsWith(command) }
         val fields = commands.map {
             Field(
-                "${Reference.prefixes[0]}${it.textCommandData.name}",
+                "${R.prefixes[0]}${it.textCommandData.name}",
                 "Description: ${it.textCommandData.description}\n" +
                         (if (it.textCommandData.usage != null) "Usage: ${it.textCommandData.usage}\n" else "") +
-                        "Aliases: ${if(it.textCommandData.aliases != null) it.textCommandData.aliases!!.joinToString(", ") else "None"}\n" +
+                        "Aliases: ${if (it.textCommandData.aliases != null) it.textCommandData.aliases!!.joinToString(", ") else "None"}\n" +
                         "Supports Slash: ${it.supportsSlash}\nSupports Text: ${it.supportsText}",
                 false
             )
         }
         return Embed(
-            color = Reference.defaultColor,
+            color = R.defaultColor,
             title = (if (fields.isEmpty()) "No commands found" else "Results for $command"),
             fields = fields
         )

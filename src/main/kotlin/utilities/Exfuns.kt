@@ -1,6 +1,6 @@
 package utilities
 
-import Reference
+import R
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
@@ -15,15 +15,15 @@ fun JSONObject.getJSONList(key: String): List<Any> {
     return this.getJSONArray(key).toList()
 }
 
-fun SlashCommandInteractionEvent.kReply(message: String = Reference.zeroWidthSpace) : WebhookMessageAction<Message> {
+fun SlashCommandInteractionEvent.kReply(message: String = R.zeroWidthSpace): WebhookMessageAction<Message> {
     return this.hook.sendMessage(message)
 }
 
-fun ButtonInteractionEvent.kReply(message: String = Reference.zeroWidthSpace) : WebhookMessageAction<Message> {
+fun ButtonInteractionEvent.kReply(message: String = R.zeroWidthSpace): WebhookMessageAction<Message> {
     return this.hook.sendMessage(message)
 }
 
-fun MessageReceivedEvent.kReply(message: String = Reference.zeroWidthSpace) : MessageAction {
+fun MessageReceivedEvent.kReply(message: String = R.zeroWidthSpace): MessageAction {
     return this.channel.sendMessage(message).reference(this.message).mentionRepliedUser(false)
 }
 

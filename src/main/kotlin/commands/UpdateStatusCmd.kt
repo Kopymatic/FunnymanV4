@@ -1,6 +1,6 @@
 package commands
 
-import Reference
+import R
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
@@ -21,7 +21,7 @@ class UpdateStatusCmd : HybridCommand() {
     }
 
     override suspend fun textCommandReceived(event: MessageReceivedEvent) {
-        if(Reference.owners.contains(event.author.id)) {
+        if (R.owners.contains(event.author.id)) {
             val args = event.message.getArgs().joinToString(" ")
             try {
                 event.jda.presence.activity = when {
@@ -30,7 +30,10 @@ class UpdateStatusCmd : HybridCommand() {
                     args.startsWith("Competing", true) -> Activity.competing(args.replace("Competing", "", true))
                     args.startsWith("Listening", true) -> Activity.listening(args.replace("Listening", "", true))
                     args.startsWith("Watching", true) -> Activity.watching(args.replace("Watching", "", true))
-                    args.startsWith("Default", true) -> Activity.watching("Version ${Reference.version} ${if (Reference.experimental) "Experimental" else ""}")
+                    args.startsWith(
+                        "Default",
+                        true
+                    ) -> Activity.watching("Version ${R.version} ${if (R.experimental) "Experimental" else ""}")
                     else -> Activity.playing(args)
                 }
             } catch (e: Exception) {

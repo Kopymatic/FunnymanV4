@@ -1,6 +1,6 @@
 package commands
 
-import Reference
+import R
 import dev.minn.jda.ktx.events.awaitButton
 import dev.minn.jda.ktx.interactions.components.getOption
 import dev.minn.jda.ktx.interactions.components.primary
@@ -85,7 +85,7 @@ abstract class LoveCommands : HybridCommand() {
 
         val button = primary("${Random.nextInt()}|${this.name}|${user.id}|${receiver.id}", "Return the $name")
 
-        event.kReply(Reference.zeroWidthSpace).addEmbeds(buildEmbed(user, receiver))
+        event.kReply(R.zeroWidthSpace).addEmbeds(buildEmbed(user, receiver))
             .addActionRow(button)
             .queue {
                 if (Random.nextInt(100) < reactionPercent) {
@@ -98,7 +98,7 @@ abstract class LoveCommands : HybridCommand() {
             val pressed = receiver.awaitButton(button)
             pressed.deferReply().queue()
 
-            pressed.kReply(Reference.zeroWidthSpace).addEmbeds(buildEmbed(receiver, user)).queue {
+            pressed.kReply(R.zeroWidthSpace).addEmbeds(buildEmbed(receiver, user)).queue {
                 if (Random.nextInt(100) < reactionPercent) {
                     it.addReaction(getEmoji(possibleReactions.random())).queue()
                 }
@@ -122,7 +122,7 @@ abstract class LoveCommands : HybridCommand() {
         val button = primary("${Random.nextInt()}|${this.name}|${user.id}|${receiver.id}", "Return the $name")
         var message: Message? = null
 
-        event.kReply(Reference.zeroWidthSpace)
+        event.kReply(R.zeroWidthSpace)
             .setEmbeds(buildEmbed(user, receiver))
             .setActionRow(button)
             .queue {
@@ -137,7 +137,7 @@ abstract class LoveCommands : HybridCommand() {
             val pressed = receiver.awaitButton(button)
             pressed.deferReply().queue()
 
-            pressed.kReply(Reference.zeroWidthSpace).addEmbeds(buildEmbed(receiver, user)).queue {
+            pressed.kReply(R.zeroWidthSpace).addEmbeds(buildEmbed(receiver, user)).queue {
                 if (Random.nextInt(100) < reactionPercent) {
                     it.addReaction(getEmoji(possibleReactions.random())).queue()
                 }
@@ -147,7 +147,7 @@ abstract class LoveCommands : HybridCommand() {
     }
 
     private fun buildEmbed(user: Member, receiver: Member): MessageEmbed {
-        var preparedStatement = Reference.connection.prepareStatement(
+        var preparedStatement = R.connection.prepareStatement(
             """
                 SELECT * FROM LoveCommands WHERE SenderID = ? AND ReceiverID = ? AND ActionIdentifier = ?; 
             """.trimIndent()
@@ -160,7 +160,7 @@ abstract class LoveCommands : HybridCommand() {
         val timesPerformed: Int
         if (resultSet.next()) {
             timesPerformed = resultSet.getInt("TimesPerformed") + 1
-            preparedStatement = Reference.connection.prepareStatement(
+            preparedStatement = R.connection.prepareStatement(
                 """
                     UPDATE LoveCommands
                     SET TimesPerformed = ?
@@ -175,7 +175,7 @@ abstract class LoveCommands : HybridCommand() {
         } else {
             //If the user has never performed this command, insert a new row
             timesPerformed = 1
-            preparedStatement = Reference.connection.prepareStatement(
+            preparedStatement = R.connection.prepareStatement(
                 """
                 INSERT INTO LoveCommands VALUES ('${user.id}', '${receiver.id}', '${this.actionIdentifier}', $timesPerformed);
                 """.trimIndent()
@@ -190,7 +190,7 @@ abstract class LoveCommands : HybridCommand() {
         }
 
         return Embed {
-            color = Reference.defaultColor
+            color = R.defaultColor
             title = "${user.getNickOrUsername()} $embedTitleText ${receiver.getNickOrUsername()}"
             image = gif
             footer {
@@ -207,7 +207,7 @@ class HugCmd : LoveCommands() {
     override val embedTitleText = "hugs"
     override val embedFooterText = "hugs"
     override val gifs =
-        Reference.lists.getJSONObject("LoveCommands").getJSONArray("HugGifs").toList().map { it as String }
+        R.lists.getJSONObject("LoveCommands").getJSONArray("HugGifs").toList().map { it as String }
 
     override val slashCommandData: SlashCommandData =
         slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
@@ -222,7 +222,7 @@ class KissCmd : LoveCommands() {
     override val embedTitleText = "kisses"
     override val embedFooterText = "kisses"
     override val gifs =
-        Reference.lists.getJSONObject("LoveCommands").getJSONArray("KissGifs").toList().map { it as String }
+        R.lists.getJSONObject("LoveCommands").getJSONArray("KissGifs").toList().map { it as String }
 
     override val slashCommandData: SlashCommandData =
         slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
@@ -237,7 +237,7 @@ class CuddleCmd : LoveCommands() {
     override val embedTitleText = "cuddles"
     override val embedFooterText = "cuddles"
     override val gifs =
-        Reference.lists.getJSONObject("LoveCommands").getJSONArray("CuddleGifs").toList().map { it as String }
+        R.lists.getJSONObject("LoveCommands").getJSONArray("CuddleGifs").toList().map { it as String }
 
     override val slashCommandData: SlashCommandData =
         slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
@@ -252,7 +252,7 @@ class HandHoldCmd : LoveCommands() {
     override val embedTitleText = "holds hands with"
     override val embedFooterText = "times"
     override val gifs =
-        Reference.lists.getJSONObject("LoveCommands").getJSONArray("HandHoldGifs").toList().map { it as String }
+        R.lists.getJSONObject("LoveCommands").getJSONArray("HandHoldGifs").toList().map { it as String }
 
     override val slashCommandData: SlashCommandData =
         slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
@@ -267,7 +267,7 @@ class HeadPatCmd : LoveCommands() {
     override val embedTitleText = "headpats"
     override val embedFooterText = "headpats"
     override val gifs =
-        Reference.lists.getJSONObject("LoveCommands").getJSONArray("HeadPatGifs").toList().map { it as String }
+        R.lists.getJSONObject("LoveCommands").getJSONArray("HeadPatGifs").toList().map { it as String }
 
     override val slashCommandData: SlashCommandData =
         slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
@@ -282,7 +282,7 @@ class BoopCmd : LoveCommands() {
     override val embedTitleText = "boops"
     override val embedFooterText = "boops"
     override val gifs =
-        Reference.lists.getJSONObject("LoveCommands").getJSONArray("BoopGifs").toList().map { it as String }
+        R.lists.getJSONObject("LoveCommands").getJSONArray("BoopGifs").toList().map { it as String }
 
     override val slashCommandData: SlashCommandData =
         slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)

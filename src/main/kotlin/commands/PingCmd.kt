@@ -1,6 +1,6 @@
 package commands
 
-import Reference
+import R
 import dev.minn.jda.ktx.interactions.components.button
 import dev.minn.jda.ktx.messages.reply_
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -23,7 +23,7 @@ class PingCmd : HybridCommand() {
     override val textCommandData: TextCommandData = TextCommandData(name, description)
 
     private val pingButton =
-        Reference.jda.button(label = "Pong!", style = ButtonStyle.SUCCESS) { button ->
+        R.jda.button(label = "Pong!", style = ButtonStyle.SUCCESS) { button ->
             button.reply_("Pong 2!").setEphemeral(true).queue()
         }
 

@@ -13,7 +13,7 @@ import utilities.EverythingListener
 import utilities.kReply
 import kotlin.system.exitProcess
 
-val log = Reference.log
+val log = R.log
 
 /*
 args[0] = Token
@@ -26,34 +26,34 @@ fun main(args: Array<String>) {
         log.error("You have to provide a token as first argument, and database information for the 2nd 3rd and 4th!")
         exitProcess(1)
     }
-    Reference.connection = Reference.connect(args[1], args[2], args[3])
+    R.connection = R.connect(args[1], args[2], args[3])
 
     log.info(
         """
                 --Configuration--
-                    Experimental: ${Reference.experimental}
-                    Version: ${Reference.version}
-                    ${if (Reference.experimental) Reference.debugGuild else ""}
+                    Experimental: ${R.experimental}
+                    Version: ${R.version}
+                    ${if (R.experimental) R.debugGuild else ""}
             """.trimIndent()
     )
     log.info("Creating JDA instance...")
-    Reference.jda = light(
+    R.jda = light(
         args[0],
         enableCoroutines = true,
         builder = { this.enableIntents(GatewayIntent.MESSAGE_CONTENT) }).awaitReady()
-    Reference.jda.addEventListener(EverythingListener())
+    R.jda.addEventListener(EverythingListener())
 
     log.info("Getting debug channel")
-    Reference.debugChannel = Reference.jda.getChannelById(TextChannel::class.java, Reference.debugChannelId)!!
+    R.debugChannel = R.jda.getChannelById(TextChannel::class.java, R.debugChannelId)!!
 
     log.debug("Getting commands...")
     val commands = AllCommands.commands
 
     log.info("Registering message listener...")
-    Reference.jda.listener<MessageReceivedEvent> {
+    R.jda.listener<MessageReceivedEvent> {
         var hasPrefix = false
         var name: String? = null
-        for (prefix in Reference.prefixes) {
+        for (prefix in R.prefixes) {
             if (it.message.contentRaw.startsWith(prefix)) {
                 hasPrefix = true
                 name = it.message.contentRaw.substring(prefix.length).split(" ")[0]
@@ -80,7 +80,7 @@ fun main(args: Array<String>) {
     }
 
     log.info("Registering slash listener...")
-    Reference.jda.listener<SlashCommandInteractionEvent> {
+    R.jda.listener<SlashCommandInteractionEvent> {
         it.deferReply().await()
         for (command in commands) {
             if (command.supportsSlash && command.slashCommandData.name == it.name) {
@@ -96,7 +96,7 @@ fun main(args: Array<String>) {
     }
 
     log.info("Registering autocomplete listener...")
-    Reference.jda.listener<CommandAutoCompleteInteractionEvent> {
+    R.jda.listener<CommandAutoCompleteInteractionEvent> {
         for (command in commands) {
             if (command.slashCommandData.name == it.name) {
                 command.onAutoComplete(it)
@@ -106,8 +106,8 @@ fun main(args: Array<String>) {
     }
 
     log.info("Registering slash commands...")
-    if (Reference.experimental) {
-        val guild = Reference.jda.getGuildById(Reference.debugGuild)!!
+    if (R.experimental) {
+        val guild = R.jda.getGuildById(R.debugGuild)!!
         for (command in commands) {
             if (command.supportsSlash) {
                 log.info("Registering guild command ${command.slashCommandData.name}...")
@@ -118,18 +118,18 @@ fun main(args: Array<String>) {
         for (command in commands) {
             if (command.supportsSlash) {
                 log.info("Registering command ${command.slashCommandData.name}...")
-                Reference.jda.upsertCommand(command.slashCommandData).queue()
+                R.jda.upsertCommand(command.slashCommandData).queue()
             }
         }
     }
 
-    Reference.jda.presence.activity =
-        Activity.watching("Version ${Reference.version} ${if (Reference.experimental) "Experimental" else ""}")
+    R.jda.presence.activity =
+        Activity.watching("Version ${R.version} ${if (R.experimental) "Experimental" else ""}")
 }
 
 fun logError(error: Exception) {
-    Reference.log.error(error.message)
-    Reference.debugChannel.sendMessageEmbeds(Embed {
+    R.log.error(error.message)
+    R.debugChannel.sendMessageEmbeds(Embed {
         title = "Error: \"${error.message}\""
     }).queue()
 }
