@@ -79,9 +79,9 @@ abstract class LoveCommands : HybridCommand() {
             event.kReply("You can't use this command in DMs!")
             return
         }
-        val user = event.member ?: throw CommandError("No member found!")
+        val user = event.member ?: throw CommandException("No member found!")
         val receiverUser = event.getOption<User>("user")!!
-        val receiver = event.guild?.getMemberById(receiverUser.id) ?: throw CommandError("Member not found")
+        val receiver = event.guild?.getMemberById(receiverUser.id) ?: throw CommandException("Member not found")
 
         val button = primary("${Random.nextInt()}|${this.name}|${user.id}|${receiver.id}", "Return the $name")
 
@@ -116,7 +116,7 @@ abstract class LoveCommands : HybridCommand() {
             event.kReply("You must mention a user!")
             return
         }
-        val user = event.member ?: throw CommandError("No member found!")
+        val user = event.member ?: throw CommandException("No member found!")
         val receiver = event.message.mentions.members[0]
 
         val button = primary("${Random.nextInt()}|${this.name}|${user.id}|${receiver.id}", "Return the $name")

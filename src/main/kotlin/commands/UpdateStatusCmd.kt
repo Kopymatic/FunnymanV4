@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
-import utilities.CommandError
+import utilities.CommandException
 import utilities.HybridCommand
 import utilities.TextCommandData
 
@@ -17,7 +17,7 @@ class UpdateStatusCmd : HybridCommand() {
     override val textCommandData = TextCommandData("UpdateStatus", "updates the bots status", listOf("us", "status"))
 
     override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
-        throw CommandError("This command does not support slash commands")
+        throw CommandException("This command does not support slash commands")
     }
 
     override suspend fun textCommandReceived(event: MessageReceivedEvent) {

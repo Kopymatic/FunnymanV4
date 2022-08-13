@@ -1,6 +1,5 @@
 package commands
 
-import utilities.HybridCommand
 import Reference
 import dev.minn.jda.ktx.interactions.components.button
 import dev.minn.jda.ktx.messages.reply_
@@ -10,6 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands.slash
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
+import utilities.HybridCommand
 import utilities.TextCommandData
 
 class PingCmd : HybridCommand() {

@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
-import utilities.CommandError
+import utilities.CommandException
 import utilities.HybridCommand
 import utilities.TextCommandData
 
@@ -30,7 +30,7 @@ class PollCmd : HybridCommand() {
         TextCommandData(name, description, usage = "[# of reacts (Default 2, max 10)], [Message]")
 
     override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
-        val text = event.getOption<String>("text") ?: throw CommandError("text is a required option for Poll!")
+        val text = event.getOption<String>("text") ?: throw CommandException("text is a required option for Poll!")
         val optionCount = event.getOption<Int>("options")
         reply(event, text).queue {
             if(optionCount != null) {
