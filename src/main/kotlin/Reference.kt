@@ -1,4 +1,5 @@
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.TextChannel
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -9,12 +10,15 @@ import kotlin.system.exitProcess
 
 class Reference {
     companion object {
-        const val experimental = false
+        const val experimental = true
+
         const val version = "4.0.0 PTB 5"
         val log = LoggerFactory.getLogger("Main") as Logger
         val prefixes = if (experimental) listOf("dd", "d!.") else listOf("pp", "p!")
         lateinit var jda: JDA
-        const val debugGuild = "654578321543266305"
+        const val debugGuild = "793293945437814797"
+        const val debugChannelId = "826674337591197708"
+        lateinit var debugChannel: TextChannel
         val lists = JSONObject(this::class.java.getResource("lists.json")?.readText())
         const val zeroWidthSpace = "\u200B"
         const val defaultColor: Int = 0xFF00FF
