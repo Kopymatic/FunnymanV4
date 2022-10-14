@@ -151,7 +151,6 @@ abstract class RandomImageCommands : HybridCommand() {
                 }
             }
         }
-
     }
 
     private fun random(guildId: String): MessageEmbed {
@@ -243,10 +242,11 @@ abstract class RandomImageCommands : HybridCommand() {
                 description = "Error: This is not an image!"
             )
         }
+        //FIXME: Stop using deprecated function
         val file = attachment.downloadToFile().await().absoluteFile
         val message = event.kReply(
             "Importing image... " +
-                    "\n Do NOT delete this message. It will delete the image from discords servers and it will no longer be seen in the command"
+                    "\n Do NOT delete this message. It will delete the image from Discord's servers and it will no longer be seen in the command"
         ).addFiles(FileUpload.fromData(file)).await()
         file.delete()
         val url = message.attachments[0].url
