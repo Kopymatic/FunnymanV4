@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands.slash
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
+import net.dv8tion.jda.api.utils.FileUpload
 import utilities.*
 import java.sql.ResultSet
 
@@ -246,7 +247,7 @@ abstract class RandomImageCommands : HybridCommand() {
         val message = event.kReply(
             "Importing image... " +
                     "\n Do NOT delete this message. It will delete the image from discords servers and it will no longer be seen in the command"
-        ).addFile(file).await()
+        ).addFiles(FileUpload.fromData(file)).await()
         file.delete()
         val url = message.attachments[0].url
         val messageId = message.id

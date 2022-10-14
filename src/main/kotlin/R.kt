@@ -1,5 +1,5 @@
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -10,9 +10,9 @@ import kotlin.system.exitProcess
 
 class R {
     companion object {
-        const val experimental = true
+        var experimental = true
 
-        const val version = "4.0.0 PTB 5"
+        const val version = "4.0.0 PTB 7"
         val log = LoggerFactory.getLogger("Main") as Logger
         val prefixes = if (experimental) listOf("dd", "d!.") else listOf("pp", "p!")
         lateinit var jda: JDA

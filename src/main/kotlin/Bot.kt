@@ -4,11 +4,12 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.light
 import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.entities.Activity
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.requests.GatewayIntent
+import utilities.Coroutines
 import utilities.EverythingListener
 import utilities.kReply
 import kotlin.system.exitProcess
@@ -17,28 +18,34 @@ val log = R.log
 
 /*
 args[0] = Token
-args[1] = DB URL
-args[2] = DB Username
-args[3] = DB Password
+args[1] = Experimental (True or False)
+args[2] = DB URL
+args[3] = DB Username
+args[4] = DB Password
  */
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
-        log.error("You have to provide a token as first argument, and database information for the 2nd 3rd and 4th!")
+        log.error("index 0 should be the token, 1 should be experimental (true or false), 2 should be db url, 3 is db username, and 4 is db pass")
         exitProcess(1)
     }
-    R.connection = R.connect(args[1], args[2], args[3])
+
+    val token = args[0]
+    R.experimental = args[1].toBoolean()
+    R.connection = R.connect(args[2], args[3], args[4])
 
     log.info(
         """
                 --Configuration--
                     Experimental: ${R.experimental}
                     Version: ${R.version}
-                    ${if (R.experimental) R.debugGuild else ""}
+                    ${if (R.experimental) "Debug guild: ${R.debugGuild}" else ""}
             """.trimIndent()
     )
+
+    //Create the JDA instance
     log.info("Creating JDA instance...")
     R.jda = light(
-        args[0],
+        token,
         enableCoroutines = true,
         builder = { this.enableIntents(GatewayIntent.MESSAGE_CONTENT) }).awaitReady()
     R.jda.addEventListener(EverythingListener())
@@ -46,7 +53,6 @@ fun main(args: Array<String>) {
     log.info("Getting debug channel")
     R.debugChannel = R.jda.getChannelById(TextChannel::class.java, R.debugChannelId)!!
 
-    log.debug("Getting commands...")
     val commands = AllCommands.commands
 
     log.info("Registering message listener...")
@@ -54,7 +60,7 @@ fun main(args: Array<String>) {
         var hasPrefix = false
         var name: String? = null
         for (prefix in R.prefixes) {
-            if (it.message.contentRaw.startsWith(prefix)) {
+            if (it.message.contentRaw.lowercase().startsWith(prefix)) {
                 hasPrefix = true
                 name = it.message.contentRaw.substring(prefix.length).split(" ")[0]
                 break
@@ -69,7 +75,8 @@ fun main(args: Array<String>) {
                 ))
             ) {
                 try {
-                    command.textCommandReceived(it)
+                    log.info("Command received: ${command.textCommandData.name}")
+                    Coroutines.main { command.textCommandReceived(it) }
                 } catch (e: Exception) {
                     it.kReply("An internal exception occurred: \"${e.message}\"").queue()
                     logError(e)
@@ -81,11 +88,14 @@ fun main(args: Array<String>) {
 
     log.info("Registering slash listener...")
     R.jda.listener<SlashCommandInteractionEvent> {
+        log.info("Slash command received: ${it.name}")
         it.deferReply().await()
         for (command in commands) {
             if (command.supportsSlash && command.slashCommandData.name == it.name) {
                 try {
-                    command.slashCommandReceived(it)
+                    Coroutines.main {
+                        command.slashCommandReceived(it)
+                    }
                 } catch (e: Exception) {
                     it.kReply("An internal exception occurred: \"${e.message}\"").setEphemeral(true).queue()
                     logError(e)
@@ -99,7 +109,9 @@ fun main(args: Array<String>) {
     R.jda.listener<CommandAutoCompleteInteractionEvent> {
         for (command in commands) {
             if (command.slashCommandData.name == it.name) {
-                command.onAutoComplete(it)
+                Coroutines.main {
+                    command.onAutoComplete(it)
+                }
                 break
             }
         }

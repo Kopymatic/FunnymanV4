@@ -81,7 +81,9 @@ abstract class LoveCommands : HybridCommand() {
         }
         val user = event.member ?: throw CommandException("No member found!")
         val receiverUser = event.getOption<User>("user")!!
-        val receiver = event.guild?.getMemberById(receiverUser.id) ?: throw CommandException("Member not found")
+        val receiver: Member? = event.guild?.retrieveMemberById(receiverUser.id)?.complete()
+
+        receiver ?: throw CommandException("Member not found")
 
         val button = primary("${Random.nextInt()}|${this.name}|${user.id}|${receiver.id}", "Return the $name")
 

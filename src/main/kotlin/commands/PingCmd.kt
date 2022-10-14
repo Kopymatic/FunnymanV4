@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import utilities.HybridCommand
 import utilities.TextCommandData
+import utilities.kReply
 
 class PingCmd : HybridCommand() {
     private val name = "ping"
@@ -28,10 +29,10 @@ class PingCmd : HybridCommand() {
         }
 
     override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
-        event.hook.sendMessage("Pong!").addActionRow(pingButton).queue()
+        event.kReply("Pong!").setComponents(ActionRow.of(pingButton)).queue()
     }
 
     override suspend fun textCommandReceived(event: MessageReceivedEvent) {
-        event.message.reply_("Pong!").setActionRows(ActionRow.of(pingButton)).queue()
+        event.kReply("Pong!").setComponents(ActionRow.of(pingButton)).queue()
     }
 }
