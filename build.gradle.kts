@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "org.example"
-version = "4.0.0-PTB7"
+version = "4.0.0-PTB8"
 
 repositories {
     mavenCentral()
@@ -27,6 +27,12 @@ dependencies {
     implementation("org.postgresql:postgresql:42.5.0")
 }
 
+
+val jar by tasks.getting(Jar::class) {
+    manifest {
+        attributes["Main-Class"] = "BotKt"
+    }
+}
 //test {
 //    useJUnitPlatform()
 //}

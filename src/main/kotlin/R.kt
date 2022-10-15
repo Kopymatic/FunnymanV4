@@ -12,9 +12,9 @@ class R {
     companion object {
         var experimental = true
 
-        const val version = "4.0.0 PTB 7"
+        const val version = "4.0.0 PTB 8"
         val log = LoggerFactory.getLogger("Main") as Logger
-        val prefixes = if (experimental) listOf("dd", "d!.") else listOf("pp", "p!")
+        lateinit var prefixes: List<String>
         lateinit var jda: JDA
         const val debugGuild = "793293945437814797"
         const val debugChannelId = "826674337591197708"

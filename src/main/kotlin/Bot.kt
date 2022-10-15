@@ -31,6 +31,7 @@ fun main(args: Array<String>) {
 
     val token = args[0]
     R.experimental = args[1].toBoolean()
+    R.prefixes = if (R.experimental) listOf("dd", "d!.") else listOf("pp", "p!")
     R.connection = R.connect(args[2], args[3], args[4])
 
     log.info(
