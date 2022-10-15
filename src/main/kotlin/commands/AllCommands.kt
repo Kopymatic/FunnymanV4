@@ -20,6 +20,8 @@ class AllCommands {
             PetCmd(),
             MemeCmd(),
             PollCmd(),
+            PhraseCommands(),
+            SlashCommandUtilsCmd()
         )
     }
 }

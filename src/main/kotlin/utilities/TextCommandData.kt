@@ -6,4 +6,5 @@ data class TextCommandData(
     val aliases: List<String>? = null,
     val usage: String? = null,
     val category: String? = null,
+    val hidden: Boolean = false
 )

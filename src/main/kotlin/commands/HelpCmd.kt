@@ -18,8 +18,8 @@ import utilities.kReply
 
 
 class HelpCmd : HybridCommand() {
-    private val name = "help"
-    private val description = "Get help with text commands"
+    override val name = "help"
+    override val description = "Get help with text commands"
 
     override val supportsSlash: Boolean = true
     override val supportsText: Boolean = true
@@ -50,17 +50,21 @@ class HelpCmd : HybridCommand() {
     private fun getHelp(): MessageEmbed {
         val commands = AllCommands.commands.filter { it.supportsText }
         val fields = commands.map {
-            Field(
-                "${R.prefixes[0]}${it.textCommandData.name} ${if (it.textCommandData.usage == null) "" else it.textCommandData.usage}",
-                it.textCommandData.description,
-                false
-            )
+            if (it.textCommandData.hidden) {
+                null
+            } else {
+                Field(
+                    "${R.prefixes[0]}${it.textCommandData.name} ${if (it.textCommandData.usage == null) "" else it.textCommandData.usage}",
+                    it.textCommandData.description,
+                    false
+                )
+            }
         }
         return Embed(
             color = R.defaultColor,
             title = "Text Commands",
             description = "Use `${R.prefixes[0]}help [command]` to get help with a command",
-            fields = fields
+            fields = fields.filterNotNull()
 
         )
     }
