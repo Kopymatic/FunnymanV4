@@ -135,8 +135,7 @@ fun main(args: Array<String>) {
         }
     }
 
-    R.jda.presence.activity =
-        Activity.watching("Version ${R.version} ${if (R.experimental) "Experimental" else ""}")
+    R.jda.presence.activity = Activity.watching("V${R.version} ${if (R.experimental) "Experimental" else ""}")
 }
 
 fun logError(error: Exception) {
