@@ -10,11 +10,13 @@ import utilities.HybridCommand
 import utilities.TextCommandData
 
 class UpdateStatusCmd : HybridCommand() {
+    override val name: String = "updatestatus"
+    override val description: String = "updates the bots status"
     override val supportsSlash = false
     override val supportsText = true
     override val slashCommandData: SlashCommandData
-        get() = throw Error("This command does not support slash commands")
-    override val textCommandData = TextCommandData("UpdateStatus", "updates the bots status", listOf("us", "status"))
+        get() = throw CommandException("This command does not support slash commands")
+    override val textCommandData = TextCommandData(name, description, listOf("us", "status"), hidden = true)
 
     override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
         throw CommandException("This command does not support slash commands")
@@ -33,7 +35,7 @@ class UpdateStatusCmd : HybridCommand() {
                     args.startsWith(
                         "Default",
                         true
-                    ) -> Activity.watching("Version ${R.version} ${if (R.experimental) "Experimental" else ""}")
+                    ) -> Activity.watching("V${R.version} ${if (R.experimental) "Experimental" else ""}")
                     else -> Activity.playing(args)
                 }
             } catch (e: Exception) {

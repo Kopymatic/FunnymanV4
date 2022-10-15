@@ -20,9 +20,6 @@ import utilities.*
 import java.sql.ResultSet
 
 abstract class RandomImageCommands : HybridCommand() {
-    abstract val name: String
-    abstract val description: String
-
     override val supportsSlash = true
     override val supportsText = true
 

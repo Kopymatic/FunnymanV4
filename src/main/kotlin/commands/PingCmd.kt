@@ -14,8 +14,8 @@ import utilities.TextCommandData
 import utilities.kReply
 
 class PingCmd : HybridCommand() {
-    private val name = "ping"
-    private val description = "Ping pong!"
+    override val name = "ping"
+    override val description = "Ping pong!"
 
     override val supportsSlash: Boolean = true
     override val supportsText: Boolean = true

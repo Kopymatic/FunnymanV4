@@ -11,13 +11,16 @@ import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction
 
 abstract class HybridCommand {
+    abstract val name: String
+    abstract val description: String
+
     abstract val supportsSlash: Boolean
     abstract val supportsText: Boolean
 
     abstract val slashCommandData: SlashCommandData
     abstract val textCommandData: TextCommandData
 
-    abstract suspend fun slashCommandReceived(event : SlashCommandInteractionEvent)
+    abstract suspend fun slashCommandReceived(event: SlashCommandInteractionEvent)
 
     abstract suspend fun textCommandReceived(event: MessageReceivedEvent)
 

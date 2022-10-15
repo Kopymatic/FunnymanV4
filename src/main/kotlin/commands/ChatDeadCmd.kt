@@ -13,8 +13,8 @@ import utilities.TextCommandData
 import utilities.kReply
 
 class ChatDeadCmd : HybridCommand() {
-    private val name = "chatdead"
-    private val description = "Make the bot ask a question to revive chat"
+    override val name = "chatdead"
+    override val description = "Make the bot ask a question to revive chat"
 
     override val supportsSlash = true
     override val supportsText = true

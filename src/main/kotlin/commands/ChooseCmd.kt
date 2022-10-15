@@ -10,15 +10,16 @@ import utilities.HybridCommand
 import utilities.TextCommandData
 
 class ChooseCmd : HybridCommand() {
-    private val name = "choose"
-    private val description = "Choose between two or more options"
+    override val name = "choose"
+    override val description = "Choose between two or more options"
 
     override val supportsSlash: Boolean = true
-    override val supportsText: Boolean =  true
+    override val supportsText: Boolean = true
 
     override val slashCommandData: SlashCommandData = slash(name, description)
         .addOption(OptionType.STRING, "choices", "Choices to choose from, separated by commas", true, false)
-    override val textCommandData: TextCommandData = TextCommandData(name, description, usage = "[choice1], [choice2], ...", aliases = listOf("pick"))
+    override val textCommandData: TextCommandData =
+        TextCommandData(name, description, usage = "[choice1], [choice2], ...", aliases = listOf("pick"))
 
     override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
         val choices = event.getOption<String>("choices")?.split(",")

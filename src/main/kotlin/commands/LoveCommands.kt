@@ -21,8 +21,6 @@ import utilities.*
 import kotlin.random.Random
 
 abstract class LoveCommands : HybridCommand() {
-    abstract val name: String
-    abstract val description: String
     open val aliases: List<String>? = null
     open val usage: String = "[user as @mention]"
 

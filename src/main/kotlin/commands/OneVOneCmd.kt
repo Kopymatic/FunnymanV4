@@ -15,16 +15,17 @@ import utilities.getJSONList
 import utilities.kReply
 
 class OneVOneCmd : HybridCommand() {
-    private val name = "onevone"
-    private val description = "Battle it out between two things"
+    override val name = "onevone"
+    override val description = "Battle it out between two things"
 
     override val supportsSlash: Boolean = true
-    override val supportsText: Boolean =  true
+    override val supportsText: Boolean = true
 
     override val slashCommandData: SlashCommandData = slash(name, description)
         .addOption(OptionType.STRING, "thing1", "The first thing in the battle", true)
         .addOption(OptionType.STRING, "thing2", "The second thing in the battle", true)
-    override val textCommandData: TextCommandData = TextCommandData(name, description, aliases = listOf("1v1"), usage = "[thing1], [thing2]")
+    override val textCommandData: TextCommandData =
+        TextCommandData(name, description, aliases = listOf("1v1"), usage = "[thing1], [thing2]")
 
     override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
         val thing1 = event.getOption<String>("thing1")!!
