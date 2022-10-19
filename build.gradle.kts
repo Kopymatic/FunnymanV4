@@ -14,6 +14,8 @@ repositories {
     maven("https://jitpack.io/")
 }
 
+val exposedVersion = "0.40.1"
+
 dependencies {
     implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
@@ -25,6 +27,9 @@ dependencies {
     implementation("org.json:json:20220924")
 
     implementation("org.postgresql:postgresql:42.5.0")
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
 }
 
 

@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction
+import org.jetbrains.exposed.sql.Query
+import org.jetbrains.exposed.sql.ResultRow
 import org.json.JSONObject
 
 fun JSONObject.getJSONList(key: String): List<Any> {
@@ -31,10 +33,12 @@ fun SlashCommandInteractionEvent.isInDm() : Boolean {
     return this.channel.type == ChannelType.PRIVATE
 }
 
-fun MessageReceivedEvent.isInDm() : Boolean {
+fun MessageReceivedEvent.isInDm(): Boolean {
     return this.channel.type == ChannelType.PRIVATE
 }
 
-fun Member.getNickOrUsername() : String {
+fun Member.getNickOrUsername(): String {
     return this.nickname ?: this.user.name
 }
+
+fun Query.firstRow(): ResultRow? = limit(1).firstOrNull()
