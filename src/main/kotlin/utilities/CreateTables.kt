@@ -1,4 +1,46 @@
 package utilities
+
+fun createTables() {
+    create( //Create Guild
+        """
+            CREATE TABLE Guild(
+            SenderID TEXT NOT NULL,
+            ReceiverID TEXT NOT NULL,
+            ActionIdentifier TEXT NOT NULL,
+            TimesPerformed INT NOT NULL,
+            primaryKey SERIAL PRIMARY KEY
+            );
+        """.trimIndent()
+    )
+}
+
+fun create(sql: String) {
+    try {
+        val c = R.connection
+        val stmt = c.createStatement()
+        stmt.executeUpdate(sql)
+        stmt.close()
+        c.close()
+        println("Success!")
+    } catch (e: Exception) {
+        println(e.message)
+    }
+}
+//
+//fun update(sql: String) {
+//    try {
+//        val c = R.connection
+//        val stmt = c.createStatement()
+//        stmt.executeUpdate(sql)
+//        stmt.close()
+//        c.close()
+//        println("Edit Success!")
+//    } catch (e: Exception) {
+//        println(e.message)
+//    }
+//}
+
+
 //
 //fun main(args: Array<String>) {
 //    R.connection = R.connect(args[1], args[2], args[3])
@@ -102,28 +144,3 @@ package utilities
 //    )
 //}
 //
-//fun create(sql: String) {
-//    try {
-//        val c = R.connection
-//        val stmt = c.createStatement()
-//        stmt.executeUpdate(sql)
-//        stmt.close()
-//        c.close()
-//        println("Success!")
-//    } catch (e: Exception) {
-//        println(e.message)
-//    }
-//}
-//
-//fun update(sql: String) {
-//    try {
-//        val c = R.connection
-//        val stmt = c.createStatement()
-//        stmt.executeUpdate(sql)
-//        stmt.close()
-//        c.close()
-//        println("Edit Success!")
-//    } catch (e: Exception) {
-//        println(e.message)
-//    }
-//}

@@ -22,6 +22,7 @@ args[1] = Experimental (True or False)
 args[2] = DB URL
 args[3] = DB Username
 args[4] = DB Password
+args[5] = Create tables (True or False)
  */
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
