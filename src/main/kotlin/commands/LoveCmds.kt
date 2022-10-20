@@ -153,7 +153,7 @@ abstract class LoveCmds : HybridCommand() {
         var row: ResultRow? = null
 
         transaction {
-            addLogger(StdOutSqlLogger)
+            if (R.experimental) addLogger(StdOutSqlLogger)
             row =
                 LoveCommands.select { (LoveCommands.senderId eq user.id) and (LoveCommands.receiverId eq receiver.id) and (LoveCommands.actionId eq actionIdentifier) }
                     .firstRow()
@@ -163,7 +163,7 @@ abstract class LoveCmds : HybridCommand() {
         if (row != null) {
             timesPerformed = row!![LoveCommands.timesPerformed] + 1
             transaction {
-                addLogger(StdOutSqlLogger)
+                if (R.experimental) addLogger(StdOutSqlLogger)
                 LoveCommands.update({ (LoveCommands.senderId eq user.id) and (LoveCommands.receiverId eq receiver.id) and (LoveCommands.actionId eq actionIdentifier) }) {
                     it[LoveCommands.timesPerformed] = timesPerformed
                 }
@@ -172,7 +172,7 @@ abstract class LoveCmds : HybridCommand() {
             //If the user has never performed this command, insert a new row
             timesPerformed = 1
             transaction {
-                addLogger(StdOutSqlLogger)
+                if (R.experimental) addLogger(StdOutSqlLogger)
                 LoveCommands.insert {
                     it[senderId] = user.id
                     it[receiverId] = receiver.id
