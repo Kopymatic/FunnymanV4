@@ -4,10 +4,6 @@ import org.jetbrains.exposed.sql.Database
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.Connection
-import java.sql.DriverManager
-import java.sql.SQLException
-import kotlin.system.exitProcess
 
 class R {
     companion object {
@@ -27,19 +23,5 @@ class R {
         const val green: Int = 0x00FF00
         val owners = listOf("326489320980611075")
         lateinit var database: Database
-
-        lateinit var connection: Connection
-
-        fun connect(url: String, username: String, password: String): Connection {
-            try {
-                val conn = DriverManager.getConnection(url, username, password)
-                log.info("Connected to the PostgreSQL server successfully.")
-                return conn
-            } catch (e: SQLException) {
-                log.error("The database failed to connect, exiting process")
-                log.error(e.message)
-                exitProcess(0)
-            }
-        }
     }
 }

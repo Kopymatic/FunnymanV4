@@ -1,5 +1,5 @@
 import commands.AllCommands
-import database.Guilds
+import database.createTables
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.light
@@ -10,8 +10,7 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.requests.GatewayIntent
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.Database
 import utilities.Coroutines
 import utilities.EverythingListener
 import utilities.kReply
@@ -37,20 +36,8 @@ fun main(args: Array<String>) {
     R.experimental = args[1].toBoolean()
     R.prefixes = if (R.experimental) listOf("dd", "d!.") else listOf("pp", "p!")
     R.database = Database.connect(args[2], "org.postgresql.Driver", args[3], args[4])
-    R.connection = R.connect(args[2], args[3], args[4])
 
-    transaction {
-        addLogger(StdOutSqlLogger)
-
-        SchemaUtils.create(Guilds)
-
-        Guilds.insertIgnore {
-            it[guildId] = "793293945437814797"
-            it[data] = "{id:\"793293945437814797\"}"
-        }.resultedValues!!.first()
-
-        println("Guilds: ${Guilds.selectAll()}")
-    }
+    createTables()
 
     log.info(
         """
