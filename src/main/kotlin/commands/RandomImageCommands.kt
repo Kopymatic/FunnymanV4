@@ -1,6 +1,7 @@
 package commands
 
 import R
+import database.*
 import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.interactions.commands.Subcommand
 import dev.minn.jda.ktx.interactions.components.getOption
@@ -16,19 +17,19 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands.slash
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.utils.FileUpload
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.transactions.transaction
 import utilities.*
-import java.sql.ResultSet
 
-abstract class RandomImageCommands : HybridCommand() {
+abstract class RandomImageCommands<T : RandomImageCommandsDb> : HybridCommand() {
     override val supportsSlash = true
     override val supportsText = true
-
-    private val connection = R.connection
 
     /**
      * The name of the database table to store this command's info inside - this MUST BE SET
      */
-    abstract val dbTableName: String
+    abstract val database: T
 
     /**
      * The footers this command can show - this MUST BE SET
@@ -87,8 +88,8 @@ abstract class RandomImageCommands : HybridCommand() {
     override suspend fun textCommandReceived(event: MessageReceivedEvent) {
         val args = event.message.getArgs()
         when {
-            event.message.attachments.isNotEmpty() ->{
-                if(!event.message.attachments[0].isImage) {
+            event.message.attachments.isNotEmpty() -> {
+                if (!event.message.attachments[0].isImage) {
                     event.kReply("This is not an image.").queue()
                     return
                 }
@@ -151,32 +152,35 @@ abstract class RandomImageCommands : HybridCommand() {
     }
 
     private fun random(guildId: String): MessageEmbed {
-        val preparedStatement = connection.prepareStatement("SELECT * FROM $dbTableName WHERE guildId = ? ORDER BY RANDOM() LIMIT 1")
-        preparedStatement.setString(1, guildId)
-        val resultSet = preparedStatement.executeQuery()
+        var row: ResultRow? = null
+        transaction {
+            if (R.experimental) addLogger(StdOutSqlLogger)
+            row = database.select { database.guildId eq guildId }.orderBy(Random()).limit(1).firstRow()
+        }
 
-        if (!resultSet.next()) {
+        if (row == null) {
             return Embed(
                 color = R.red,
                 description = "Error: Likely you have nothing imported in this server, or a database error has occurred."
             )
         }
 
-        return makeEmbed(resultSet!!)
-            ?: Embed(
-                color = R.red,
-                description = "Error: Unable to make embed."
-            )
+        return makeEmbed(row!!)
+            ?: throw CommandException("Unable to make embed - returned embed was null")
     }
 
     private fun find(id: Int?, tags: String?, guildId: String): List<MessageEmbed> {
         if (id != null) {
             val dbSize = getBiggestId()
             //TODO: Add partnering
-            val ps =
-                connection.prepareStatement("SELECT * FROM ${this.dbTableName} WHERE id = $id AND guildID = '$guildId';")
-            val rs = ps.executeQuery()
-            if (!rs.next()) {
+            var row: ResultRow? = null
+
+            transaction {
+                if (R.experimental) addLogger(StdOutSqlLogger)
+                row = database.select { (database.id eq id) and (database.guildId eq guildId) }.firstRow()
+            }
+
+            if (row == null) {
                 return listOf(
                     Embed(
                         description = "This entry is unavailable! Its likely it was deleted or is out of the database range",
@@ -185,34 +189,29 @@ abstract class RandomImageCommands : HybridCommand() {
                     )
                 )
             }
-            val embed = makeEmbed(rs)
-            return listOf(embed!!)
+            return listOf(
+                makeEmbed(row!!) ?: throw CommandException("Unable to return embed - makeEmbed returned null")
+            )
         } else if (tags != null) {
+            val embeds = mutableListOf<MessageEmbed>()
 
-            var ps =
-                connection.prepareStatement("SELECT * FROM ${this.dbTableName} WHERE TextTag ILIKE ? AND GuildID='$guildId';") //ILIKE means case-insensitive
-            ps.setString(1, "%$tags%") //Why do we put percent signs here??
+            transaction {
+                if (R.experimental) addLogger(StdOutSqlLogger)
+                val query = if (tags.trim().equals("all", true)) {
+                    database.select { database.guildId eq guildId }
+                } else {
+                    database.select { (database.textTag ilike "%$tags%") and (database.guildId eq guildId) }
+                }
 
-            if (tags.trim().equals("all", true)) {
-                ps = connection.prepareStatement(
-                    "SELECT * FROM ${this.dbTableName} WHERE GuildID='$guildId';"
-                )
-            }
-
-            val rs = ps.executeQuery()
-
-            if (rs.next()) {
-                val embeds = mutableListOf<MessageEmbed>()
-
-                do {
-                    val embed = makeEmbed(rs)
+                query.forEach {
+                    val embed = makeEmbed(it)
                     if (embed != null) {
                         embeds.add(embed)
                     }
-                } while (rs.next())
+                }
+            }
 
-                return embeds
-            } else {
+            if (embeds.isEmpty()) {
                 return listOf(
                     Embed(
                         description = "No entries found with that tag!",
@@ -221,6 +220,8 @@ abstract class RandomImageCommands : HybridCommand() {
                     )
                 )
             }
+
+            return embeds
         } else {
             return listOf(
                 Embed(
@@ -233,7 +234,7 @@ abstract class RandomImageCommands : HybridCommand() {
 
     private suspend fun importSlash(event: SlashCommandInteractionEvent): MessageEmbed {
         val attachment = event.getOption<Attachment>("image")!!
-        if(!attachment.isImage) {
+        if (!attachment.isImage) {
             return Embed(
                 color = R.red,
                 description = "Error: This is not an image!"
@@ -259,28 +260,26 @@ abstract class RandomImageCommands : HybridCommand() {
         messageId: String
     ): MessageEmbed {
         val textTag: String = description
-        val ps = connection.prepareStatement(
-            """
-            INSERT INTO ${this.dbTableName}
-            VALUES(DEFAULT, ?, ?, ?, ?, ?, ?);
-            """.trimIndent()
-        )
-        ps.setString(1, guildId) //Set the first ? in the prepared statement to guildID
-        ps.setString(2, attachmentUrl) //second ? is imageURL
-        ps.setString(3, null) //third is linkTag
-        ps.setString(4, textTag) //fourth is textTag
-        ps.setString(5, memberId) //fifth is memberID
-        ps.setString(6, messageId) //Last is messageID
-        try {
-            ps.executeUpdate()
 
+        transaction {
+            if (R.experimental) addLogger(StdOutSqlLogger)
+            database.insert {
+                it[database.guildId] = guildId
+                it[database.imageLink] = attachmentUrl
+                it[database.linkTag] = null
+                it[database.textTag] = textTag
+                it[database.importerId] = memberId
+                it[database.importMessageId] = messageId
+            }
+        }
+        try {
             val rs = getLatestEntry()
 
             return Embed(
                 color = R.green,
-                title = "Successfully imported image with id ${rs.getInt("id")}",
-                description = "Description: ${rs.getString("textTag")}",
-                image = rs.getString("imageLink")
+                title = "Successfully imported image with id ${rs[database.id]}",
+                description = "Description: ${rs[database.textTag]}",
+                image = rs[database.imageLink]
             )
         } catch (e: Exception) {
             e.printStackTrace()
@@ -292,47 +291,52 @@ abstract class RandomImageCommands : HybridCommand() {
     }
 
     private fun edit(toEdit: Int, tags: String, guildId: String, member: Member): MessageEmbed {
-        var ps = connection.prepareStatement("SELECT * FROM ${this.dbTableName} WHERE id = $toEdit;")
-        val rs = ps.executeQuery()
-        if (rs.next()) {
-            if (rs.getString("GuildID") != guildId) {
+        var row: ResultRow? = null
+
+        transaction {
+            if (R.experimental) addLogger(StdOutSqlLogger)
+            row = database.select { database.id eq toEdit }.firstRow()
+        }
+
+        if (row != null) {
+            if (row!![database.guildId] != guildId) {
                 return Embed(
                     color = R.red,
                     description = "Error: This ID isn't available in this guild!"
                 )
             }
 
-            if (!member.permissions.contains(Permission.ADMINISTRATOR) && member.id != rs.getString("ImporterID")) {
+            if (!member.permissions.contains(Permission.ADMINISTRATOR) && member.id != row!![database.importerId]) {
                 return Embed(
                     color = R.red,
-                    description = "Error: You must either be a server administrator or the original importer to remove this!"
+                    description = "Error: You must either be a server administrator or the original importer to edit this!"
                 )
             }
 
             val textTag: String = tags
-            val linkTag: String? = null //sql null
+            val linkTag: String? = null
 
-            ps = connection.prepareStatement(
-                """
-                UPDATE ${this.dbTableName}
-                SET textTag = ?, linkTag = ?
-                WHERE id = ?;
-            """.trimIndent()
-            )
-            ps.setString(1, textTag)
-            ps.setString(2, linkTag)
-            ps.setInt(3, toEdit)
+            var result: Int? = null
+            transaction {
+                if (R.experimental) addLogger(StdOutSqlLogger)
+                result = database.update({ database.id eq toEdit }) {
+                    it[database.textTag] = textTag
+                    it[database.linkTag] = linkTag
+                }
+            }
 
-            return if (ps.executeUpdate() == 1) {
+            return if (result == null || result == 0) {
+                //Unsuccessful if result is null or 0
+                throw CommandException("Unable to edit entry -- Contact Kopy#1424")
+            } else if (result == 1) {
+                //Successful if result is 1
                 Embed(
                     color = R.green,
                     description = "Successfully edited tags of $toEdit to $tags"
                 )
             } else {
-                Embed(
-                    color = R.red,
-                    description = "Database/sql error: Unable to edit tags. Contact the developer."
-                )
+                //What the hell happened here
+                throw CommandException("What happened here??")
             }
         } else {
             return Embed(
@@ -343,34 +347,46 @@ abstract class RandomImageCommands : HybridCommand() {
     }
 
     private fun delete(toDelete: Int, guildId: String, member: Member): MessageEmbed {
-        var ps = connection.prepareStatement("SELECT * FROM ${this.dbTableName} WHERE id = $toDelete;")
-        val rs = ps.executeQuery()
-        if (rs.next()) {
-            if (rs.getString("GuildID") != guildId) {
+        var row: ResultRow? = null
+
+        transaction {
+            if (R.experimental) addLogger(StdOutSqlLogger)
+            row = database.select { database.id eq toDelete }.firstRow()
+        }
+
+        if (row != null) {
+            if (row!![database.guildId] != guildId) {
                 return Embed(
                     color = R.red,
                     description = "Error: You cannot delete an entry that is not in this guild!"
                 )
             }
 
-            if (!member.permissions.contains(Permission.ADMINISTRATOR) && member.id != rs.getString("ImporterID")) {
+            if (!member.permissions.contains(Permission.ADMINISTRATOR) && member.id != row!![database.importerId]) {
                 return Embed(
                     color = R.red,
                     description = "Error: You cannot delete an entry that isn't yours unless you're an administrator!"
                 )
             }
 
-            ps = connection.prepareStatement("DELETE FROM ${this.dbTableName} WHERE id=$toDelete;")
-            return if (ps.executeUpdate() == 1) {
+            var result: Int? = null
+            transaction {
+                if (R.experimental) addLogger(StdOutSqlLogger)
+                result = database.deleteWhere { database.id eq toDelete }
+            }
+
+            return if (result == null || result == 0) {
+                //Unsuccessful if result is null or 0
+                throw CommandException("Unable to delete entry -- Contact Kopy#1424")
+            } else if (result == 1) {
+                //Successful if result is 1
                 Embed(
                     color = R.green,
                     description = "Success!"
                 )
             } else {
-                Embed(
-                    color = R.red,
-                    description = "Error: unknown error!"
-                )
+                //What the hell happened here
+                throw CommandException("What happened here??")
             }
         } else {
             return Embed(
@@ -380,11 +396,11 @@ abstract class RandomImageCommands : HybridCommand() {
         }
     }
 
-    private fun makeEmbed(resultSet: ResultSet): MessageEmbed? {
-        val id = resultSet.getInt("id")
-        val textTag = resultSet.getString("textTag")
-        val linkTag = resultSet.getString("linkTag")
-        val image = resultSet.getString("imageLink")
+    private fun makeEmbed(resultRow: ResultRow): MessageEmbed? {
+        val id = resultRow[database.id]
+        val textTag = resultRow[database.textTag]
+        val linkTag = resultRow[database.linkTag]
+        val image = resultRow[database.imageLink]
 
         val invalidEndings = arrayOf(".mp4")
         var isInvalid = false
@@ -419,19 +435,25 @@ abstract class RandomImageCommands : HybridCommand() {
         ))
     }
 
-    private fun getLatestEntry(): ResultSet {
-        val preparedStatement =
-            connection.prepareStatement("SELECT * FROM ${this.dbTableName} ORDER BY ID DESC LIMIT 1")
-        val resultSet = preparedStatement.executeQuery()
-        resultSet.next()
-        return resultSet
+    private fun getLatestEntry(): ResultRow {
+        var latestEntry: ResultRow? = null
+        transaction {
+            if (R.experimental) addLogger(StdOutSqlLogger)
+            latestEntry = database.selectAll().orderBy(database.id to SortOrder.DESC).limit(1).firstRow()
+        }
+        return latestEntry ?: throw CommandException("latestEntry isn't supposed to be null!")
     }
 
     private fun getBiggestId(): Int {
-        val preparedStatement = connection.prepareStatement("SELECT MAX(id) FROM ${this.dbTableName}")
-        val resultSet = preparedStatement.executeQuery()
-        resultSet.next()
-        return resultSet.getInt(1)
+        val id = transaction {
+            if (R.experimental) addLogger(StdOutSqlLogger)
+            database
+                .slice(database.id.max())
+                .selectAll()
+                .firstOrNull()
+                ?.get(database.id.max())?.value
+        }
+        return id ?: throw CommandException("Biggest ID was null")
     }
 
     private fun getAdvancedHelp(): EmbedBuilder {
@@ -451,15 +473,15 @@ abstract class RandomImageCommands : HybridCommand() {
             )
             .addField(
                 "Importing:",
-                "To import an image to the database, send the command with an attachment. Optionally, you can supply a description and/or a link." +
-                        "\n**Note:** Currently, only **Discord message jump links** are supported. Videos are **not** currently supported.",
+                "To import an image to the database, send the command with an attachment. Optionally, you can supply a description." +
+                        "\n**Note:** Videos are **not** currently supported.",
                 false
             )
             .addField(
                 "Editing:",
-                "If you ever wish to edit the text or link of something you previously imported, " +
+                "If you ever wish to edit the text of something you previously imported, " +
                         "send the command the same as you would with importing, but with edit and an id at the beginning and no attachment" +
-                        "\n**Example:** `${R.prefixes[0]}${this.name} edit (entry ID) (new text here) (new link here)`" +
+                        "\n**Example:** `${R.prefixes[0]}${this.name} edit (entry ID) (new text here)`" +
                         "\n**Note:** Editing an import that has a link with no link will delete that link.", false
             )
             .addField(
@@ -490,11 +512,11 @@ abstract class RandomImageCommands : HybridCommand() {
     }
 }
 
-class NoContextCmd : RandomImageCommands() {
+class NoContextCmd : RandomImageCommands<NoContext>() {
     override val name = "nocontext"
     override val description = "No context"
 
-    override val dbTableName: String = "nocontext"
+    override val database = NoContext
     override val footers: Array<String> = arrayOf("Laugh. Now.", "laugh! >:(", "nice meme, very poggers")
     override val slashCommandData = setUpOptions(slash(name, description))
     override val textCommandData =
@@ -506,11 +528,11 @@ class NoContextCmd : RandomImageCommands() {
         )
 }
 
-class PeopleCmd : RandomImageCommands() {
+class PeopleCmd : RandomImageCommands<People>() {
     override val name = "people"
     override val description = "People"
 
-    override val dbTableName: String = "people"
+    override val database = People
     override val footers =
         arrayOf("Oh this- this is beautiful", "Looking fabulous!", "that's a cute ass person ya got there")
 
@@ -524,11 +546,12 @@ class PeopleCmd : RandomImageCommands() {
         )
 }
 
-class PetCmd : RandomImageCommands() {
+class PetCmd : RandomImageCommands<Pets>() {
     override val name = "pet"
     override val description = "Pets!"
 
-    override val dbTableName: String = "pets"
+
+    override val database = Pets
     override val footers: Array<String> = arrayOf(
         "Oh this- this is beautiful",
         "Looking fabulous!",
@@ -544,11 +567,11 @@ class PetCmd : RandomImageCommands() {
         )
 }
 
-class MemeCmd : RandomImageCommands() {
+class MemeCmd : RandomImageCommands<Memes>() {
     override val name = "meme"
     override val description = "Funny funny haha memes"
 
-    override val dbTableName: String = "memes"
+    override val database = Memes
     override val footers: Array<String> = arrayOf("haha funny", "nice meme, very poggers", "laugh! >:(")
     override val slashCommandData = setUpOptions(slash(name, description))
     override val textCommandData =
