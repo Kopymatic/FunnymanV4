@@ -22,13 +22,13 @@ class ChooseCmd : HybridCommand() {
         TextCommandData(name, description, usage = "[choice1], [choice2], ...", aliases = listOf("pick"))
 
     override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
-        val choices = event.getOption<String>("choices")?.split(",")
+        val choices = event.getOption<String>("choices")?.split("/")
         val final: String = choices?.random() ?: "No choices provided!"
         reply(event, "I choose `${final.trim()}`").queue()
     }
 
     override suspend fun textCommandReceived(event: MessageReceivedEvent) {
-        val choices = removePrefix(event).split(",")
+        val choices = removePrefix(event).split("/")
         val final: String = if (choices.size == 1) "Not enough choices provided!" else choices.random()
         reply(event, "I choose `${final.trim()}`").queue()
     }
