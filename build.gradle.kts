@@ -20,8 +20,8 @@ dependencies {
     implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
-    implementation("net.dv8tion:JDA:5.0.0-alpha.19")
-    implementation("com.github.minndevelopment:jda-ktx:fc7d7de")
+    implementation("net.dv8tion:JDA:5.0.0-beta.5")
+    implementation("com.github.minndevelopment:jda-ktx:9fc90f6")
     implementation("ch.qos.logback:logback-classic:1.4.3")
     // https://mvnrepository.com/artifact/org.json/json
     implementation("org.json:json:20220924")
