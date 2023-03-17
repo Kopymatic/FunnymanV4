@@ -61,6 +61,8 @@ fun main(args: Array<String>) {
 
     val commands = AllCommands.commands
 
+
+    //TODO: rewrite this shit
     log.info("Registering message listener...")
     R.jda.listener<MessageReceivedEvent> {
         var hasPrefix = false

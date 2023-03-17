@@ -3,28 +3,20 @@ package commands
 import R
 import database.LoveCommands
 import dev.minn.jda.ktx.events.awaitButton
-import dev.minn.jda.ktx.interactions.components.getOption
 import dev.minn.jda.ktx.interactions.components.primary
 import dev.minn.jda.ktx.messages.Embed
 import kotlinx.coroutines.withTimeoutOrNull
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.entities.emoji.Emoji
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.Commands.slash
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import utilities.*
 import kotlin.random.Random
 
-abstract class LoveCmds : HybridCommand() {
-    open val aliases: List<String>? = null
+abstract class LoveCmds : KopyCommand() {
     open val usage: String = "[user as @mention]"
 
     /**
@@ -72,45 +64,7 @@ abstract class LoveCmds : HybridCommand() {
         "https://media1.tenor.com/images/552432b67854256e7b51ab96c86d8b80/tenor.gif",
     )
 
-    override val supportsSlash = true
-    override val supportsText = true
-
-    final override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
-        if (event.isInDm()) { // If the command is in a DM, we don't have anyone to send it to
-            event.kReply("You can't use this command in DMs!")
-            return
-        }
-        val user = event.member ?: throw CommandException("No member found!")
-        val receiverUser = event.getOption<User>("user")!!
-        val receiver: Member? = event.guild?.retrieveMemberById(receiverUser.id)?.complete()
-
-        receiver ?: throw CommandException("Member not found")
-
-        val button = primary("${Random.nextInt()}|${this.name}|${user.id}|${receiver.id}", "Return the $name")
-
-        event.kReply(R.zeroWidthSpace).addEmbeds(buildEmbed(user, receiver))
-            .addActionRow(button)
-            .queue {
-                if (Random.nextInt(100) < reactionPercent) {
-                    it.addReaction(Emoji.fromFormatted(possibleReactions.random())).queue()
-                }
-            }
-
-        //180000 ms is 3 minutes
-        withTimeoutOrNull(180000) {
-            val pressed = receiver.awaitButton(button)
-            pressed.deferReply().queue()
-
-            pressed.kReply(R.zeroWidthSpace).addEmbeds(buildEmbed(receiver, user)).queue {
-                if (Random.nextInt(100) < reactionPercent) {
-                    it.addReaction(getEmoji(possibleReactions.random())).queue()
-                }
-            }
-            event.hook.editOriginalComponents(ActionRow.of(button.asDisabled())).queue()
-        } ?: event.hook.editOriginalComponents(ActionRow.of(button.asDisabled())).queue()
-    }
-
-    final override suspend fun textCommandReceived(event: MessageReceivedEvent) {
+    final override suspend fun execute(event: MessageReceivedEvent) {
         if (event.isInDm()) {
             event.kReply("You can't use this command in DMs!")
             return
@@ -200,107 +154,102 @@ abstract class LoveCmds : HybridCommand() {
 }
 
 class HugCmd : LoveCmds() {
-    override val name = "hug"
-    override val description = "Hugs a user"
+    init {
+        name = "hug"
+        description = "Hugs a user"
+        arguments = usage
+    }
+
     override val actionIdentifier = "hugg"
     override val embedTitleText = "hugs"
     override val embedFooterText = "hugs"
     override val gifs =
         R.lists.getJSONObject("LoveCommands").getJSONArray("HugGifs").toList().map { it as String }
-
-    override val slashCommandData: SlashCommandData =
-        slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
-    override val textCommandData: TextCommandData =
-        TextCommandData(name, description, aliases = aliases, usage = usage)
 }
 
 class KissCmd : LoveCmds() {
-    override val name = "kiss"
-    override val description = "Kisses a user"
+    init {
+        name = "kiss"
+        description = "kisses a user"
+        arguments = usage
+    }
+
     override val actionIdentifier = "kiss"
     override val embedTitleText = "kisses"
     override val embedFooterText = "kisses"
     override val gifs =
         R.lists.getJSONObject("LoveCommands").getJSONArray("KissGifs").toList().map { it as String }
-
-    override val slashCommandData: SlashCommandData =
-        slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
-    override val textCommandData: TextCommandData =
-        TextCommandData(name, description, aliases = aliases, usage = usage)
 }
 
 class CuddleCmd : LoveCmds() {
-    override val name = "cuddle"
-    override val description = "Cuddles a user"
+    init {
+        name = "cuddle"
+        description = "Cuddles a user"
+        arguments = usage
+    }
+
     override val actionIdentifier = "cudd"
     override val embedTitleText = "cuddles"
     override val embedFooterText = "cuddles"
     override val gifs =
         R.lists.getJSONObject("LoveCommands").getJSONArray("CuddleGifs").toList().map { it as String }
-
-    override val slashCommandData: SlashCommandData =
-        slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
-    override val textCommandData: TextCommandData =
-        TextCommandData(name, description, aliases = aliases, usage = usage)
 }
 
 class HandHoldCmd : LoveCmds() {
-    override val name = "handhold"
-    override val description = "Holds hands with a user"
+    init {
+        name = "handhold"
+        description = "Holds hands with a user"
+        arguments = usage
+    }
+
     override val actionIdentifier = "hand"
     override val embedTitleText = "holds hands with"
     override val embedFooterText = "times"
     override val gifs =
         R.lists.getJSONObject("LoveCommands").getJSONArray("HandHoldGifs").toList().map { it as String }
-
-    override val slashCommandData: SlashCommandData =
-        slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
-    override val textCommandData: TextCommandData =
-        TextCommandData(name, description, aliases = aliases, usage = usage)
 }
 
 class HeadPatCmd : LoveCmds() {
-    override val name = "headpat"
-    override val description = "Pat somebody on the head!"
+    init {
+        name = "headpat"
+        description = "Pat somebody on the head!"
+        arguments = usage
+    }
+
     override val actionIdentifier = "head"
     override val embedTitleText = "headpats"
     override val embedFooterText = "headpats"
     override val gifs =
         R.lists.getJSONObject("LoveCommands").getJSONArray("HeadPatGifs").toList().map { it as String }
-
-    override val slashCommandData: SlashCommandData =
-        slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
-    override val textCommandData: TextCommandData =
-        TextCommandData(name, description, aliases = aliases, usage = usage)
 }
 
 class BoopCmd : LoveCmds() {
-    override val name = "boop"
-    override val description = "Boop somebody!"
+    init {
+        name = "boop"
+        description = "Boop somebody"
+        arguments = usage
+    }
+
     override val actionIdentifier = "boop"
     override val embedTitleText = "boops"
     override val embedFooterText = "boops"
     override val gifs =
         R.lists.getJSONObject("LoveCommands").getJSONArray("BoopGifs").toList().map { it as String }
-
-    override val slashCommandData: SlashCommandData =
-        slash(name, description).addOption(OptionType.USER, "user", "The user to $name", true)
-    override val textCommandData: TextCommandData =
-        TextCommandData(name, description, aliases = aliases, usage = usage)
 }
 
-class HotSteamyGaySexCmd : LoveCmds() {
-    override val name = "hotsteamygaysex"
-    override val description = "HotSteamyGaySex somebody!"
-    override val actionIdentifier = "hsgs"
-    override val embedTitleText = "HotSteamyGaySexs"
-    override val embedFooterText = "HotSteamyGaySexs"
-    override val gifs =
-        R.lists.getJSONObject("LoveCommands").getJSONArray("HotSteamyGaySexGifs").toList().map { it as String }
-    override val supportsSlash = false
-
-    override val slashCommandData: SlashCommandData
-        get() = throw CommandException("This doesnt support slash commands. Fuck you.")
-    override val textCommandData: TextCommandData =
-        TextCommandData(name, description, aliases = aliases, usage = usage)
-}
+//This was a joke lmao
+//class HotSteamyGaySexCmd : LoveCmds() {
+//    override val name = "hotsteamygaysex"
+//    override val description = "HotSteamyGaySex somebody!"
+//    override val actionIdentifier = "hsgs"
+//    override val embedTitleText = "HotSteamyGaySexs"
+//    override val embedFooterText = "HotSteamyGaySexs"
+//    override val gifs =
+//        R.lists.getJSONObject("LoveCommands").getJSONArray("HotSteamyGaySexGifs").toList().map { it as String }
+//    override val supportsSlash = false
+//
+//    override val slashCommandData: SlashCommandData
+//        get() = throw CommandException("This doesnt support slash commands. Fuck you.")
+//    override val textCommandData: TextCommandData =
+//        TextCommandData(name, description, aliases = aliases, usage = usage)
+//}
