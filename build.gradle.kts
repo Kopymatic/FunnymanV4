@@ -6,8 +6,8 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-group = "org.example"
-version = "4.0.0-PTB8"
+group = "com.Kopymatic"
+version = "4.0.0-PTB10"
 
 repositories {
     mavenCentral()

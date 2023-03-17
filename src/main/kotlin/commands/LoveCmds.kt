@@ -288,3 +288,19 @@ class BoopCmd : LoveCmds() {
     override val textCommandData: TextCommandData =
         TextCommandData(name, description, aliases = aliases, usage = usage)
 }
+
+class HotSteamyGaySexCmd : LoveCmds() {
+    override val name = "hotsteamygaysex"
+    override val description = "HotSteamyGaySex somebody!"
+    override val actionIdentifier = "hsgs"
+    override val embedTitleText = "HotSteamyGaySexs"
+    override val embedFooterText = "HotSteamyGaySexs"
+    override val gifs =
+        R.lists.getJSONObject("LoveCommands").getJSONArray("HotSteamyGaySexGifs").toList().map { it as String }
+    override val supportsSlash = false
+
+    override val slashCommandData: SlashCommandData
+        get() = throw CommandException("This doesnt support slash commands. Fuck you.")
+    override val textCommandData: TextCommandData =
+        TextCommandData(name, description, aliases = aliases, usage = usage)
+}

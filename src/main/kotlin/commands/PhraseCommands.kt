@@ -39,7 +39,7 @@ class PhraseCommands : HybridCommand() {
 
     override suspend fun textCommandReceived(event: MessageReceivedEvent) {
         val args = event.message.getArgs()
-        if (args.isEmpty()) {
+        if (args[0].isBlank()) {
             event.kReply().addEmbeds(getHelp()).queue()
         } else if (args[0].lowercase() == "lenny") {
             event.kReply("( ͡° ͜ʖ ͡°)").queue()

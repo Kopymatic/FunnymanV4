@@ -13,6 +13,7 @@ class AllCommands {
             HandHoldCmd(),
             HeadPatCmd(),
             BoopCmd(),
+            HotSteamyGaySexCmd(),
             HelpCmd(),
             UpdateStatusCmd(),
             NoContextCmd(),
