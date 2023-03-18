@@ -14,11 +14,11 @@ class RateCmd : KopyCommand() {
     }
 
     override suspend fun execute(event: MessageReceivedEvent) {
-        val args = event.message.getArgs()
+        val args = event.message.getArgs().joinToString(" ")
         if (args.isEmpty()) {
-            reply(event, "I'll ${verb[Random().nextInt(verb.size)]} ${event.member?.asMention} ${getRating()}")
+            reply(event, "I'll ${verb[Random().nextInt(verb.size)]} ${event.member?.asMention} ${getRating()}").queue()
         } else {
-            reply(event, "I'll ${verb[Random().nextInt(verb.size)]} $args ${getRating()}")
+            reply(event, "I'll ${verb[Random().nextInt(verb.size)]} \"$args\" ${getRating()}").queue()
         }
     }
 

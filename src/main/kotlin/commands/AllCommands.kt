@@ -22,7 +22,8 @@ class AllCommands {
             MemeCmd(),
             PollCmd(),
 //            PhraseCommands(),
-            SlashCommandUtilsCmd()
+            SlashCommandUtilsCmd(),
+            RateCmd()
         )
     }
 }
