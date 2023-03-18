@@ -1,39 +1,22 @@
 package commands
 
 import R
-import dev.minn.jda.ktx.interactions.components.getOption
 import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.Commands.slash
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
-import utilities.HybridCommand
-import utilities.TextCommandData
+import utilities.KopyCommand
 import utilities.getJSONList
 import utilities.kReply
 
-class OneVOneCmd : HybridCommand() {
-    override val name = "onevone"
-    override val description = "Battle it out between two things"
-
-    override val supportsSlash: Boolean = true
-    override val supportsText: Boolean = true
-
-    override val slashCommandData: SlashCommandData = slash(name, description)
-        .addOption(OptionType.STRING, "thing1", "The first thing in the battle", true)
-        .addOption(OptionType.STRING, "thing2", "The second thing in the battle", true)
-    override val textCommandData: TextCommandData =
-        TextCommandData(name, description, aliases = listOf("1v1"), usage = "[thing1], [thing2]")
-
-    override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
-        val thing1 = event.getOption<String>("thing1")!!
-        val thing2 = event.getOption<String>("thing2")!!
-        event.kReply(R.zeroWidthSpace).addEmbeds(oneVOne(thing1, thing2)).queue()
+class OneVOneCmd : KopyCommand() {
+    init {
+        name = "OneVOne"
+        description = "Battle it out between two things"
+        arguments = "[thing1] [thing2]"
+        aliases = arrayOf("1v1")
     }
 
-    override suspend fun textCommandReceived(event: MessageReceivedEvent) {
+    override suspend fun execute(event: MessageReceivedEvent) {
         val args = event.message.getArgs()
         if (args.size < 2) {
             event.kReply("You need to provide two things to battle!").queue()

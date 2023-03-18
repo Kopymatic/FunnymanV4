@@ -1,9 +1,10 @@
 package commands
 
+import utilities.KopyCommand
+
 class AllCommands {
     companion object {
-        val commands = listOf(
-            PingCmd(),
+        val commands: List<KopyCommand> = listOf(
             ChooseCmd(),
             OneVOneCmd(),
             ChatDeadCmd(),
@@ -20,7 +21,7 @@ class AllCommands {
             PetCmd(),
             MemeCmd(),
             PollCmd(),
-            PhraseCommands(),
+//            PhraseCommands(),
             SlashCommandUtilsCmd()
         )
     }

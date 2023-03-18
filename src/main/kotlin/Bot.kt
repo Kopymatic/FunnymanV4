@@ -1,13 +1,10 @@
 import commands.AllCommands
 import database.createTables
-import dev.minn.jda.ktx.coroutines.await
 import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.light
 import dev.minn.jda.ktx.messages.Embed
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.jetbrains.exposed.sql.Database
@@ -78,67 +75,18 @@ fun main(args: Array<String>) {
         if (name == null) return@listener
 
         for (command in commands) {
-            if (command.supportsText && (command.textCommandData.name.lowercase() == name.lowercase()) || (command.textCommandData.aliases != null && command.textCommandData.aliases!!.contains(
+            if ((command.name.lowercase() == name.lowercase()) || (command.aliases != null && command.aliases!!.contains(
                     name.lowercase()
                 ))
             ) {
                 try {
-                    log.info("Command received: ${command.textCommandData.name}")
-                    Coroutines.main { command.textCommandReceived(it) }
+                    log.info("Command received: ${command.name}")
+                    Coroutines.main { command.execute(it) }
                 } catch (e: Exception) {
                     it.kReply("An internal exception occurred: \"${e.message}\"").queue()
                     logError(e)
                 }
                 break
-            }
-        }
-    }
-
-    log.info("Registering slash listener...")
-    R.jda.listener<SlashCommandInteractionEvent> {
-        log.info("Slash command received: ${it.name}")
-        it.deferReply().await()
-        for (command in commands) {
-            if (command.supportsSlash && command.slashCommandData.name == it.name) {
-                try {
-                    Coroutines.main {
-                        command.slashCommandReceived(it)
-                    }
-                } catch (e: Exception) {
-                    it.kReply("An internal exception occurred: \"${e.message}\"").setEphemeral(true).queue()
-                    logError(e)
-                }
-                break
-            }
-        }
-    }
-
-    log.info("Registering autocomplete listener...")
-    R.jda.listener<CommandAutoCompleteInteractionEvent> {
-        for (command in commands) {
-            if (command.slashCommandData.name == it.name) {
-                Coroutines.main {
-                    command.onAutoComplete(it)
-                }
-                break
-            }
-        }
-    }
-
-    log.info("Registering slash commands...")
-    if (R.experimental) {
-        val guild = R.jda.getGuildById(R.debugGuild)!!
-        for (command in commands) {
-            if (command.supportsSlash) {
-                log.info("Registering guild command ${command.slashCommandData.name}...")
-                guild.upsertCommand(command.slashCommandData).queue()
-            }
-        }
-    } else {
-        for (command in commands) {
-            if (command.supportsSlash) {
-                log.info("Registering command ${command.slashCommandData.name}...")
-                R.jda.upsertCommand(command.slashCommandData).queue()
             }
         }
     }

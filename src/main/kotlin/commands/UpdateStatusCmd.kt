@@ -2,27 +2,18 @@ package commands
 
 import R
 import net.dv8tion.jda.api.entities.Activity
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
-import utilities.CommandException
-import utilities.HybridCommand
-import utilities.TextCommandData
+import utilities.KopyCommand
 
-class UpdateStatusCmd : HybridCommand() {
-    override val name: String = "updatestatus"
-    override val description: String = "updates the bots status"
-    override val supportsSlash = false
-    override val supportsText = true
-    override val slashCommandData: SlashCommandData
-        get() = throw CommandException("This command does not support slash commands")
-    override val textCommandData = TextCommandData(name, description, listOf("us", "status"), hidden = true)
-
-    override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
-        throw CommandException("This command does not support slash commands")
+class UpdateStatusCmd : KopyCommand() {
+    init {
+        name = "UpdateStatus"
+        description = "Updates the bot's status"
+        aliases = arrayOf("us, status")
+        hidden = true
     }
 
-    override suspend fun textCommandReceived(event: MessageReceivedEvent) {
+    override suspend fun execute(event: MessageReceivedEvent) {
         if (R.owners.contains(event.author.id)) {
             val args = event.message.getArgs().joinToString(" ")
             try {

@@ -26,14 +26,14 @@ class HelpCmd : KopyCommand() {
     }
 
     private fun getHelp(): MessageEmbed {
-        val commands = AllCommands.commands.filter { it.supportsText }
+        val commands = AllCommands.commands
         val fields = commands.map {
-            if (it.textCommandData.hidden) {
+            if (it.hidden) {
                 null
             } else {
                 Field(
-                    "${R.prefixes[0]}${it.textCommandData.name} ${if (it.textCommandData.usage == null) "" else it.textCommandData.usage}",
-                    it.textCommandData.description,
+                    "${R.prefixes[0]}${it.name} ${if (it.arguments == null) "" else it.arguments}",
+                    it.description,
                     false
                 )
             }
@@ -48,14 +48,13 @@ class HelpCmd : KopyCommand() {
     }
 
     private fun getHelp(command: String): MessageEmbed {
-        val commands = AllCommands.commands.filter { it.supportsText && it.textCommandData.name.startsWith(command) }
+        val commands = AllCommands.commands.filter { it.name.startsWith(command) }
         val fields = commands.map {
             Field(
-                "${R.prefixes[0]}${it.textCommandData.name}",
-                "Description: ${it.textCommandData.description}\n" +
-                        (if (it.textCommandData.usage != null) "Usage: ${it.textCommandData.usage}\n" else "") +
-                        "Aliases: ${if (it.textCommandData.aliases != null) it.textCommandData.aliases!!.joinToString(", ") else "None"}\n" +
-                        "Supports Slash: ${it.supportsSlash}\nSupports Text: ${it.supportsText}",
+                "${R.prefixes[0]}${it.name}",
+                "Description: ${it.description}\n" +
+                        (if (it.arguments != null) "Usage: ${it.arguments}\n" else "") +
+                        "Aliases: ${if (it.aliases != null) it.aliases!!.joinToString(", ") else "None"}\n",
                 false
             )
         }

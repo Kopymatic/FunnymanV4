@@ -155,7 +155,7 @@ abstract class LoveCmds : KopyCommand() {
 
 class HugCmd : LoveCmds() {
     init {
-        name = "hug"
+        name = "Hug"
         description = "Hugs a user"
         arguments = usage
     }
@@ -169,7 +169,7 @@ class HugCmd : LoveCmds() {
 
 class KissCmd : LoveCmds() {
     init {
-        name = "kiss"
+        name = "Kiss"
         description = "kisses a user"
         arguments = usage
     }
@@ -183,7 +183,7 @@ class KissCmd : LoveCmds() {
 
 class CuddleCmd : LoveCmds() {
     init {
-        name = "cuddle"
+        name = "Cuddle"
         description = "Cuddles a user"
         arguments = usage
     }
@@ -197,7 +197,7 @@ class CuddleCmd : LoveCmds() {
 
 class HandHoldCmd : LoveCmds() {
     init {
-        name = "handhold"
+        name = "HandHold"
         description = "Holds hands with a user"
         arguments = usage
     }
@@ -211,7 +211,7 @@ class HandHoldCmd : LoveCmds() {
 
 class HeadPatCmd : LoveCmds() {
     init {
-        name = "headpat"
+        name = "HeadPat"
         description = "Pat somebody on the head!"
         arguments = usage
     }
@@ -225,7 +225,7 @@ class HeadPatCmd : LoveCmds() {
 
 class BoopCmd : LoveCmds() {
     init {
-        name = "boop"
+        name = "Boop"
         description = "Boop somebody"
         arguments = usage
     }

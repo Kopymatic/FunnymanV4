@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.Commands.slash
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.utils.FileUpload
 import org.jetbrains.exposed.sql.*
@@ -22,9 +21,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import utilities.*
 
-abstract class RandomImageCommands<T : RandomImageCommandsDb> : HybridCommand() {
-    override val supportsSlash = true
-    override val supportsText = true
+abstract class RandomImageCommands<T : RandomImageCommandsDb> : KopyCommand() {
 
     /**
      * The name of the database table to store this command's info inside - this MUST BE SET
@@ -36,56 +33,7 @@ abstract class RandomImageCommands<T : RandomImageCommandsDb> : HybridCommand() 
      */
     abstract val footers: Array<String>
 
-    override suspend fun slashCommandReceived(event: SlashCommandInteractionEvent) {
-        //Return if not in a guild
-        if (event.guild == null) {
-            event.kReply("This command can only be used in a server.")
-            return
-        }
-
-        when (event.subcommandName) {
-            "random" -> {
-                event.kReply().addEmbeds(random(event.guild!!.id)).queue()
-            }
-            "find" -> {
-                event.kReply("Loading...").queue {
-                    ButtonPaginator(
-                        R.jda,
-                        it,
-                        ButtonPaginatorOptions(
-                            find(
-                                event.getOption<Int?>("id"),
-                                event.getOption<String?>("tag"),
-                                event.guild!!.id
-                            ),
-                            0
-                        )
-                    )
-                }
-            }
-            "import" -> {
-                event.channel.sendMessage(R.zeroWidthSpace).setEmbeds(importSlash(event)).queue()
-            }
-            "edit" -> {
-                event.kReply().addEmbeds(
-                    edit(
-                        event.getOption<Int>("id")!!,
-                        event.getOption<String>("description")!!,
-                        event.guild!!.id,
-                        event.member!!
-                    )
-                ).queue()
-            }
-            "delete" -> {
-                event.kReply().addEmbeds(delete(event.getOption<Int>("id")!!, event.guild!!.id, event.member!!)).queue()
-            }
-            else -> {
-                event.kReply("Unknown subcommand").queue()
-            }
-        }
-    }
-
-    override suspend fun textCommandReceived(event: MessageReceivedEvent) {
+    override suspend fun execute(event: MessageReceivedEvent) {
         val args = event.message.getArgs()
         when {
             event.message.attachments.isNotEmpty() -> {
@@ -513,43 +461,40 @@ abstract class RandomImageCommands<T : RandomImageCommandsDb> : HybridCommand() 
 }
 
 class NoContextCmd : RandomImageCommands<NoContext>() {
-    override val name = "nocontext"
-    override val description = "No context"
+    init {
+        name = "NoContext"
+        description = "No Context images from your guild"
+        arguments = "Do \"${R.prefixes[0]}NoContext help\" for help"
+        aliases = arrayOf("nc")
+        category = "Random Image Commands"
+    }
 
     override val database = NoContext
     override val footers: Array<String> = arrayOf("Laugh. Now.", "laugh! >:(", "nice meme, very poggers")
-    override val slashCommandData = setUpOptions(slash(name, description))
-    override val textCommandData =
-        TextCommandData(
-            name,
-            description,
-            aliases = listOf("nc"),
-            usage = "Do \"${R.prefixes[0]}$name help\" for help"
-        )
 }
 
 class PeopleCmd : RandomImageCommands<People>() {
-    override val name = "people"
-    override val description = "People"
+    init {
+        name = "People"
+        description = "Shows a random image from this guilds People database"
+        arguments = "Do \"${R.prefixes[0]}people help\" for help"
+        aliases = arrayOf("me")
+        category = "Random Image Commands"
+    }
 
     override val database = People
     override val footers =
         arrayOf("Oh this- this is beautiful", "Looking fabulous!", "that's a cute ass person ya got there")
-
-    override val slashCommandData = setUpOptions(slash(name, description))
-    override val textCommandData =
-        TextCommandData(
-            name,
-            description,
-            aliases = listOf("me"),
-            usage = "Do \"${R.prefixes[0]}$name help\" for help"
-        )
 }
 
 class PetCmd : RandomImageCommands<Pets>() {
-    override val name = "pet"
-    override val description = "Pets!"
-
+    init {
+        name = "Pet"
+        description = "Pets!"
+        arguments = "Do \"${R.prefixes[0]}pet help\" for help"
+        aliases = arrayOf("pets")
+        category = "Random Image Commands"
+    }
 
     override val database = Pets
     override val footers: Array<String> = arrayOf(
@@ -558,26 +503,16 @@ class PetCmd : RandomImageCommands<Pets>() {
         "aww cute pet",
         "that's a cute ass pet ya got there"
     )
-    override val slashCommandData = setUpOptions(slash(name, description))
-    override val textCommandData =
-        TextCommandData(
-            name,
-            description,
-            usage = "Do \"${R.prefixes[0]}$name help\" for help"
-        )
 }
 
 class MemeCmd : RandomImageCommands<Memes>() {
-    override val name = "meme"
-    override val description = "Funny funny haha memes"
+    init {
+        name = "Meme"
+        description = "Funny funny haha memes"
+        arguments = "Do \"${R.prefixes[0]}meme help\" for help"
+        category = "Random Image Commands"
+    }
 
     override val database = Memes
     override val footers: Array<String> = arrayOf("haha funny", "nice meme, very poggers", "laugh! >:(")
-    override val slashCommandData = setUpOptions(slash(name, description))
-    override val textCommandData =
-        TextCommandData(
-            name,
-            description,
-            usage = "Do \"${R.prefixes[0]}$name help\" for help"
-        )
 }

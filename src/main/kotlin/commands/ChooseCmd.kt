@@ -7,7 +7,7 @@ class ChooseCmd : KopyCommand() {
     init {
         name = "Choose"
         description = "Choose between two or more options"
-        arguments = "[choice1], [choice2], ..."
+        arguments = "[choice1]/[choice2]/[choice3] ..."
         aliases = arrayOf("pick")
     }
 
