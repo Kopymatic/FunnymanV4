@@ -9,7 +9,7 @@ class R {
     companion object {
         var experimental = true
 
-        const val version = "4.0.0 A11"
+        const val version = "4.0.0 B1"
         val log = LoggerFactory.getLogger("Main") as Logger
         lateinit var prefixes: List<String>
         lateinit var jda: JDA
